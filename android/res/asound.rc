@@ -1,0 +1,8 @@
+#
+#  ALSA library configuration file for SmartX API test
+#
+# pre-load the configuration files
+
+pcm_type.smartx {
+  lib "libasound_module_pcm_smartx.so"
+}

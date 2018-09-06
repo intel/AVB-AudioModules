@@ -1,0 +1,153 @@
+#
+# Copyright (C) 2018 Intel Corporation. All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+#
+
+# include( CMakeLists.src_delivery.txt )
+
+if( NOT IAS_DISABLE_TESTS )
+
+  #------------------------------------------
+  # Unit tests
+  #------------------------------------------
+  IasAddTest( audio common alsa_type_conversion )
+  IasAddTest( audio common alsa_smartx_plugin_tst )
+  IasAddTest( audio common audio_common_types )
+  IasAddTest( audio common fft_functions )
+  IasAddTest( audio common filter_estimator )
+  IasAddTest( audio common metadata )
+  IasAddTest( audio common ringbuffer )
+  IasAddTest( audio common ringbuffer_mockup )
+  #IasAddTest( audio common ringbuffer_threads )
+  IasAddTest( audio common ringbuffer_factory )
+  IasAddTest( audio common memoryallocation )
+  IasAddTest( audio common shm_test )
+  IasAddTest( audio common alsa_smartx_connection_tst )
+  IasAddTest( audio common samplerateconverter_api )
+  IasAddTest( audio common samplerateconverter_controller )
+  IasAddTest( audio common samplerateconverter_farrow )
+  IasAddTest( audio common samplerateconverter_farrow_all_rates )
+  IasAddTest( audio common samplerateconverter_farrow_fir_filter )
+  IasAddTest( audio common samplerateconverter_farrow_interleaved )
+  IasAddTest( audio common samplerateconverter_farrow_pull_mode )
+  IasAddTest( audio common copy_audio_area_buffers )
+  IasAddTest( audio common data_probe )
+  IasAddTest( audio common samplerateconverter_farrow_thdn )
+  IasAddTest( audio common src_wrapper )
+  IasAddTest( audio common mutex_condvar_error )
+  IasAddTest( audio common mutex_condvar )
+  IasAddTest( audio common fdsignal )
+
+
+
+  #------------------------------------------------------
+  # ias-audio-smartx_test_support
+  #------------------------------------------------------
+  IasInitLibrary(audio smartx_test_support ${AUDIO_COMMON_VERSION_MAJOR} ${AUDIO_COMMON_VERSION_MINOR} ${AUDIO_COMMON_VERSION_REVISION})
+  
+    IasSetEntityInstallPrefix( audio )
+  
+    #IasUseEntity( audio common )
+  
+    IasAddSources( PREFIX smartx_test_support
+      shm_test_support_processes/IasPipeMessage.cpp
+      IasFftFunctions.cpp
+      IasRingBufferTestWriter.cpp
+      IasRingBufferTestReader.cpp
+      IasWavComp.cpp
+      IasFilterEstimator.cpp
+      IasThdnEstimator.cpp
+    )
+    IasAddHeadersInternalPublic(
+      IasRingBufferTestReader.hpp
+      IasRingBufferTestWriter.hpp
+      IasTimeStampCounter.hpp
+      IasWavComp.hpp
+      IasFilterEstimator.hpp
+      IasThdnEstimator.hpp
+    )
+  
+    IasAddPrivateCXXFlags(-msse)
+    IasAddPrivateCXXFlags(-msse2)
+  
+    IasFindLibrary( BOOST_SERIALIZATION_LIB boost_serialization)
+    IasFindPath( LIBSNDFILE_INCLUDE "sndfile.h" )
+    IasFindLibrary( LIBSNDFILE libsndfile.so )
+  
+  IasBuildLibrary()
+  
+  
+  
+  #----------------------------------------------
+  # ias_shm_client_process
+  #----------------------------------------------
+  #	Client Application for shared memory test
+  #---------------------------------------------- 
+  IasInitExecutable( audio ias_shm_client_process MODULE smartx_test_support )
+  
+  IasSetEntityInstallPrefix( audio )
+  
+    IasUseEntity( audio common )
+    IasUseEntity( audio smartx_test_support )
+  
+    IasAddSources( PREFIX smartx_test_support
+      shm_test_support_processes/IasShmClientProcess.cpp
+    )
+  
+    IasFindLibrary( BOOST_SERIALIZATION_LIB  boost_serialization)
+  
+  
+  IasBuildExecutable()
+  
+  if ( IAS_EXTERNAL_BUILD_SOURCE_DIR )
+  
+    # This is for Jenkins builds
+    set (TMP_BUILD_DIR_ROOT ${CMAKE_BINARY_DIR}/${externalBuildDir})
+  
+  else()
+  
+    # This is for local builds
+    set (TMP_BUILD_DIR_ROOT ${CMAKE_BINARY_DIR}/audio/common)
+  
+  endif()
+  
+  IasGlobalPropertyAppend(IAS_COVERAGE_OFF_DIRS
+   ${CMAKE_CURRENT_SOURCE_DIR}/private/src/smartx_test_support
+   ${CMAKE_CURRENT_SOURCE_DIR}/private/inc/smartx_test_support
+   ${CMAKE_CURRENT_SOURCE_DIR}/public/inc/internal/audio/smartx_test_support
+  )
+  
+  
+  
+#  #-----------------------------------------------------
+#  # latency
+#  #-----------------------------------------------------
+#IasInitExecutable( audio latency MODULE tools )
+  
+#  IasSetEntityInstallPrefix( audio )   
+  
+#  IasFindPath( ASOUND_INCLUDE "sound/asound.h" )
+#  IasFindLibrary( ASOUND_LIB asound )
+    
+#  IasFindPath( SNDFILE_INCLUDE "sndfile.h" )
+#  IasFindLibrary( SNDFILE_LIB sndfile )
+  
+#  IasFindPath( TBB_INCLUDE "tbb/tbb.h" )
+#  IasFindLibrary( TBB_LIB  tbb)
+    
+#  IasAddSources( PREFIX tools/latency
+#    IasAlsa.cpp
+#    IasDelayMeasurement.cpp
+#    IasLatency.cpp
+#    main.cpp
+#  )
+  
+#  IasBuildExecutable( )  
+  
+#  IasGlobalPropertyAppend(IAS_COVERAGE_OFF_DIRS 
+#   ${CMAKE_CURRENT_SOURCE_DIR}/private/src/tools 
+#   ${CMAKE_CURRENT_SOURCE_DIR}/private/inc/tools
+#  )  
+
+endif()

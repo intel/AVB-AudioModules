@@ -1,0 +1,177 @@
+#
+# Copyright (C) 2018 Intel Corporation. All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+#
+
+# Specify a name for the source entity, suggestion is to use <subsystem> <component>_source
+IasInitEntity( audio common_source "" )
+# Define the path where the sources will be installed, you have to use <subsystem>/<component>/src
+IasSetEntityInstallPrefix( "audio/common/src" )
+
+# This the copyright text for files which use '#' for commenting lines, e.g. CMakeLists
+string(REPLACE "\n" "\n# " numberSignCopyrightTag "${IAS_COPYRIGHT_TAG}")
+# This the copyright text for files which use '/* */' for commenting lines, e.g. C/C++ source and header files
+string(REPLACE "\n" "\n * " codeCopyrightTag "${IAS_COPYRIGHT_TAG}")
+set(codeCopyrightTag " *\n * ${codeCopyrightTag}" )
+
+# This lists all files that use '#' for comments
+# Leave out all CMakeLists that will be exchanged by adapted version. For that, use the list below
+IasAddFiles(CMAKELISTS_INSTALL_FILES ${CMAKE_CURRENT_SOURCE_DIR}
+  CMakeLists.common.txt
+)
+
+# This lists all files that use '#' for comments and will be replaced by adapted files
+# This applies to all CMakeLists that make use of a generator (stub and skeleton side)
+IasAddFiles(CMAKELISTS_REPLACEMENT_FILES ${CMAKE_CURRENT_SOURCE_DIR}/private/res
+  CMakeLists.txt
+)
+
+# This list holds all header and source files (public and private)
+IasAddFiles(CODE_INSTALL_FILES ${CMAKE_CURRENT_SOURCE_DIR}
+
+  PREFIX ./public/inc/internal/audio/common
+    IasAlsaTypeConversion.hpp
+    IasAudioLogging.hpp
+    IasCommonVersion.hpp
+    IasDataProbe.hpp
+    IasDataProbeHelper.hpp
+    IasFdSignal.hpp
+    IasIntProcCondVar.hpp
+    IasIntProcMutex.hpp
+  PREFIX ./public/inc/internal/audio/common/helper
+    IasCopyAudioAreaBuffers.hpp
+  PREFIX ./public/inc/internal/audio/common/samplerateconverter
+    IasSrcWrapperBase.hpp
+    IasSrcController.hpp
+    IasSrcFarrow.hpp
+    IasSrcWrapper.hpp
+  PREFIX ./public/inc/internal/audio/common/alsa_smartx_plugin
+    IasAlsaHwConstraintsStatic.hpp
+    IasSmartXPluginIpcStructures.hpp
+    IasAlsaPluginShmConnection.hpp
+    IasAlsaHwConstraintsDynamic.hpp
+    IasAlsaPluginIpc.hpp
+  PREFIX ./public/inc/internal/audio/common/audiobuffer
+    IasAudioIpcProtocolMacro.hpp
+    IasAudioRingBufferFactory.hpp
+    IasAudioRingBuffer.hpp
+    IasAudioRingBufferReal.hpp
+    IasAudioRingBufferResult.hpp
+    IasAudioIpcProtocolHead.hpp
+    IasAudioRingBufferMirror.hpp
+    IasAudioRingBufferTypes.hpp
+    IasAudioIpcMessageContainer.hpp
+    IasAudioIpc.hpp
+    IasAudioIpcProtocolTail.hpp
+  PREFIX ./public/inc/audio/common
+    IasAudioCommonTypes.hpp
+  PREFIX ./public/inc/audio/common/audiobuffer
+    IasMetaDataFactory.hpp
+    IasMemoryAllocator.hpp
+    IasMetaData.hpp
+    IasUserMetaDataFactory.hpp
+  PREFIX ./public/res
+    50-smartx.conf
+  PREFIX ./private/inc/samplerateconverter
+    IasSrcFarrowConfig.hpp
+    IasSrcFarrowFirFilter.hpp
+  PREFIX ./private/inc/alsa_smartx_plugin
+    IasAlsaSmartXConnector.hpp  
+  PREFIX ./private/src/helper
+    IasCopyAudioAreaBuffers.cpp
+  PREFIX ./private/src/common
+    IasCommonVersion.cpp
+    IasAudioLogging.cpp
+    IasAudioCommonTypes.cpp
+    IasFdSignal.cpp
+    IasDataProbe.cpp
+    IasIntProcMutex.cpp
+    IasAlsaTypeConversion.cpp
+    IasDataProbeHelper.cpp
+    IasIntProcCondVar.cpp
+  PREFIX ./private/src/samplerateconverter
+    IasSrcFarrowFirFilter.cpp
+    IasSrcFarrow.cpp
+    IasAlsa.cpp
+    IasSrcController.cpp
+    IasSrcWrapper.cpp
+  PREFIX ./private/src/samplerateconverter/coeffSrcFarrow
+    IasSrcFarrow_coeff_12000Hz_to_48000Hz.h
+    IasSrcFarrow_param_44100Hz_to_16000Hz.h
+    IasSrcFarrow_coeff_32000Hz_to_48000Hz.h
+    IasSrcFarrow_param_48000Hz_to_22050Hz.h
+    IasSrcFarrow_coeff_48000Hz_to_24000Hz.h
+    IasSrcFarrow_param_16000Hz_to_48000Hz.h
+    IasSrcFarrow_param_48000Hz_to_48000Hz.h
+    IasSrcFarrow_param_48000Hz_to_24000Hz.h
+    IasSrcFarrow_coeff_48000Hz_to_16000Hz.h
+    IasSrcFarrow_coeff_24000Hz_to_08000Hz.h
+    IasSrcFarrow_coeff_48000Hz_to_22050Hz.h
+    IasSrcFarrow_param_08000Hz_to_48000Hz.h
+    IasSrcFarrow_param_22050Hz_to_48000Hz.h
+    IasSrcFarrow_coeff_22050Hz_to_48000Hz.h
+    IasSrcFarrow_coeff_48000Hz_to_08000Hz.h
+    IasSrcFarrow_coeff_08000Hz_to_48000Hz.h
+    IasSrcFarrow_param_24000Hz_to_48000Hz.h
+    IasSrcFarrow_param_48000Hz_to_44100Hz.h
+    IasSrcFarrow_param_24000Hz_to_08000Hz.h
+    IasSrcFarrow_param_48000Hz_to_08000Hz.h
+    IasSrcFarrow_param_24000Hz_to_16000Hz.h
+    IasSrcFarrow_coeff_44100Hz_to_16000Hz.h
+    IasSrcFarrow_param_44100Hz_to_48000Hz.h
+    IasSrcFarrow_coeff_48000Hz_to_11025Hz.h
+    IasSrcFarrow_coeff_24000Hz_to_48000Hz.h
+    IasSrcFarrow_coeff_44100Hz_to_48000Hz.h
+    IasSrcFarrow_coeff_24000Hz_to_16000Hz.h
+    IasSrcFarrow_coeff_48000Hz_to_32000Hz.h
+    IasSrcFarrow_param_48000Hz_to_11025Hz.h
+    IasSrcFarrow_param_48000Hz_to_12000Hz.h
+    IasSrcFarrow_coeff_48000Hz_to_48000Hz.h
+    IasSrcFarrow_coeff_11025Hz_to_48000Hz.h
+    IasSrcFarrow_param_48000Hz_to_16000Hz.h
+    IasSrcFarrow_coeff_16000Hz_to_48000Hz.h
+    IasSrcFarrow_param_12000Hz_to_48000Hz.h
+    IasSrcFarrow_param_32000Hz_to_48000Hz.h
+    IasSrcFarrow_coeff_48000Hz_to_44100Hz.h
+    IasSrcFarrow_param_11025Hz_to_48000Hz.h
+    IasSrcFarrow_coeff_48000Hz_to_12000Hz.h
+    IasSrcFarrow_param_48000Hz_to_32000Hz.h
+  PREFIX ./private/src/alsa_smartx_plugin
+    IasAlsaSmartXConnector.cpp
+    IasAlsaPluginShmConnection.cpp
+    IasAlsaSmartXPlugin.cpp
+  PREFIX ./private/src/audiobuffer
+    IasAudioRingBufferReal.cpp
+    IasAudioRingBufferMirror.cpp
+    IasAudioRingBufferFactory.cpp
+    IasAudioRingBufferResult.cpp
+    IasMetaDataFactory.cpp
+    IasAudioRingBufferTypes.cpp
+    IasMemoryAllocator.cpp
+    IasAudioRingBuffer.cpp
+)
+
+# This holds all other files that do not need any replacement of the copyright header
+IasAddFiles(PLAIN_INSTALL_FILES ${CMAKE_CURRENT_SOURCE_DIR}
+     
+  PREFIX public/res
+    50-smartx.conf
+)
+
+#
+# From here on comes the real installation of the files
+#
+# This is for the source files
+IasInstallFilesImpl( "${CMAKE_CURRENT_SOURCE_DIR}" "" "" base ${CODE_INSTALL_FILES} COPYRIGHT_TAG ${codeCopyrightTag})
+ 
+# This is for the CMakeLists (COPYRIGHT_TAG must be handled differently than _normal_ source files)
+IasInstallFilesImpl( "${CMAKE_CURRENT_SOURCE_DIR}" "" "" base ${CMAKELISTS_INSTALL_FILES} COPYRIGHT_TAG ${numberSignCopyrightTag})
+ 
+# This is to _overwrite_ cmake files and replace the COPYRIGHT_TAG
+IasInstallFilesImpl( "${CMAKE_CURRENT_SOURCE_DIR}/private/res" "" "" base ${CMAKELISTS_REPLACEMENT_FILES} COPYRIGHT_TAG ${numberSignCopyrightTag})
+ 
+# This is for everything else
+IasInstallFilesImpl( "${CMAKE_CURRENT_SOURCE_DIR}" "" "" base ${PLAIN_INSTALL_FILES})
+
+IasBuildEntity()
