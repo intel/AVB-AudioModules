@@ -1,7 +1,5 @@
 #
-# Copyright (C) 2018 Intel Corporation. All rights reserved.
-#
-# SPDX-License-Identifier: BSD-3-Clause
+# @COPYRIGHT_TAG@
 #
 
 # include( CMakeLists.src_delivery.txt )
@@ -38,6 +36,7 @@ if( NOT IAS_DISABLE_TESTS )
   IasAddTest( audio common mutex_condvar_error )
   IasAddTest( audio common mutex_condvar )
   IasAddTest( audio common fdsignal )
+  IasAddTest( audio common logging_tst )
 
 
 
@@ -48,7 +47,8 @@ if( NOT IAS_DISABLE_TESTS )
   
     IasSetEntityInstallPrefix( audio )
   
-    #IasUseEntity( audio common )
+    IasUseEntity( core_libraries foundation )
+    IasUseEntity( audio common )
   
     IasAddSources( PREFIX smartx_test_support
       shm_test_support_processes/IasPipeMessage.cpp
@@ -88,6 +88,8 @@ if( NOT IAS_DISABLE_TESTS )
   
   IasSetEntityInstallPrefix( audio )
   
+    IasUseEntity( core_libraries foundation )
+    IasUseEntity( core_libraries command_line_parser )
     IasUseEntity( audio common )
     IasUseEntity( audio smartx_test_support )
   
@@ -120,34 +122,36 @@ if( NOT IAS_DISABLE_TESTS )
   
   
   
-#  #-----------------------------------------------------
-#  # latency
-#  #-----------------------------------------------------
-#IasInitExecutable( audio latency MODULE tools )
+  #-----------------------------------------------------
+  # latency
+  #-----------------------------------------------------
+  IasInitExecutable( audio latency MODULE tools )
   
-#  IasSetEntityInstallPrefix( audio )   
-  
-#  IasFindPath( ASOUND_INCLUDE "sound/asound.h" )
-#  IasFindLibrary( ASOUND_LIB asound )
+    IasSetEntityInstallPrefix( audio )
+    IasUseEntity( core_libraries foundation STATIC )
+    IasUseEntity( core_libraries command_line_parser STATIC )
     
-#  IasFindPath( SNDFILE_INCLUDE "sndfile.h" )
-#  IasFindLibrary( SNDFILE_LIB sndfile )
-  
-#  IasFindPath( TBB_INCLUDE "tbb/tbb.h" )
-#  IasFindLibrary( TBB_LIB  tbb)
+    IasFindPath( ASOUND_INCLUDE "sound/asound.h" )
+    IasFindLibrary( ASOUND_LIB asound )
     
-#  IasAddSources( PREFIX tools/latency
-#    IasAlsa.cpp
-#    IasDelayMeasurement.cpp
-#    IasLatency.cpp
-#    main.cpp
-#  )
+    IasFindPath( SNDFILE_INCLUDE "sndfile.h" )
+    IasFindLibrary( SNDFILE_LIB sndfile )
   
-#  IasBuildExecutable( )  
+    IasFindPath( TBB_INCLUDE "tbb/tbb.h" )
+    IasFindLibrary( TBB_LIB  tbb)
+    
+    IasAddSources( PREFIX tools/latency
+      IasAlsa.cpp
+      IasDelayMeasurement.cpp
+      IasLatency.cpp
+      main.cpp
+    )
   
-#  IasGlobalPropertyAppend(IAS_COVERAGE_OFF_DIRS 
-#   ${CMAKE_CURRENT_SOURCE_DIR}/private/src/tools 
-#   ${CMAKE_CURRENT_SOURCE_DIR}/private/inc/tools
-#  )  
+  IasBuildExecutable( )  
+  
+  IasGlobalPropertyAppend(IAS_COVERAGE_OFF_DIRS 
+   ${CMAKE_CURRENT_SOURCE_DIR}/private/src/tools 
+   ${CMAKE_CURRENT_SOURCE_DIR}/private/inc/tools
+  )  
 
 endif()

@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2018 Intel Corporation. All rights reserved.
- *
- * SPDX-License-Identifier: BSD-3-Clause
+ * @COPYRIGHT_TAG@
  */
 /**
  * @file   IasAudioRingBufferFactory.hpp
@@ -75,6 +73,15 @@ class __attribute__ ((visibility ("default"))) IasAudioRingBufferFactory
      * @param[in] name the name of the shared memory
      */
     IasAudioRingBuffer* findRingBuffer(std::string name);
+
+    /**
+     * @brief the function is used to "lose" a ringbuffer which was previously retrieved by findRingBuffer
+     *
+     * Losing a ringbuffer is used on the client side to delete the ringbuffer instance, but not the shared memory associated with it.
+     *
+     * @param[in] ringBuf A pointer to the ringbuffer which has to be lost.
+     */
+    void loseRingBuffer(IasAudioRingBuffer* ringBuf);
 
   private:
     /**

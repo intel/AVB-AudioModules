@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2018 Intel Corporation. All rights reserved.
- *
- * SPDX-License-Identifier: BSD-3-Clause
+ * @COPYRIGHT_TAG@
  */
 /**
  * @file   IasAlsaSmartXConnector.hpp
@@ -349,6 +347,13 @@ class IasAlsaSmartXConnector
      */
     int defineHwConstraints();
 
+    /**
+     * Function to close the open once file
+     *
+     * This is used for clean-up purposes.
+     */
+    void closeOpenOnceFile();
+
     DltContext *mLog;                                 //!< DLT log context
     std::string mConnectionName;                      //!< Name of the device and the buffer that will be searched for.
     std::string mFullName;                            //!< Name of the device including the prefix (smartx_ or avb_)
@@ -364,7 +369,7 @@ class IasAlsaSmartXConnector
     snd_pcm_uframes_t mAvailMin;                      //!< Available minimum samples/free space
     uint32_t mRest;                                //!< Number of frames missing during last transfer to complete one period
     IasFdSignal mFdSignal;                            //!< Signal based on filedescriptors between SmartXbar and user application
-
+    int mOpenOnceFd;                                  //!< File descriptor of the open once lock file
 };
 
 }

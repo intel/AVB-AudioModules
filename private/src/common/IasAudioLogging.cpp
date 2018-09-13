@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2018 Intel Corporation. All rights reserved.
- *
- * SPDX-License-Identifier: BSD-3-Clause
+ * @COPYRIGHT_TAG@
  */
 /**
  * @file   IasAudioLogging.cpp
@@ -17,11 +15,14 @@ namespace IasAudio {
 
 IasAudioLogging::IasAudioLogging()
 {
+  mMutex.lock();
   mDltContextMap.clear();
+  mMutex.unlock();
 }
 
 IasAudioLogging::~IasAudioLogging()
 {
+  mMutex.lock();
   DltContextMap::iterator dltContextMapEntryIt;
   for(dltContextMapEntryIt = mDltContextMap.begin(); dltContextMapEntryIt != mDltContextMap.end(); ++dltContextMapEntryIt)
   {
@@ -37,6 +38,7 @@ IasAudioLogging::~IasAudioLogging()
     }
   }
   mDltContextMap.clear();
+  mMutex.unlock();
 
   DLT_UNREGISTER_APP();
 }
@@ -51,6 +53,11 @@ IasAudioLogging* IasAudioLogging::audioLoggingInstance()
 IasAudioLogging::DltContextMap & IasAudioLogging::getMap()
 {
   return audioLoggingInstance()->mDltContextMap;
+}
+
+std::mutex& IasAudioLogging::getMutex()
+{
+  return audioLoggingInstance()->mMutex;
 }
 
 void IasAudioLogging::registerDltApp(bool enableConsoleLog)
@@ -71,6 +78,7 @@ DltContext* IasAudioLogging::registerDltContext(const std::string context_id,
   DltContext *newContext = NULL;
 
   DltContextMap::iterator dltContextMapEntryIt;
+  getMutex().lock();
   dltContextMapEntryIt = getMap().find(context_id);
   if(dltContextMapEntryIt == getMap().end())
   {
@@ -116,20 +124,24 @@ DltContext* IasAudioLogging::registerDltContext(const std::string context_id,
                                   dltContextMapEntry->getDltTraceStatus());
     }
   }
+  getMutex().unlock();
   return newContext;
 }
 
 DltContext * IasAudioLogging::getDltContext(const std::string contextId)
 {
+  getMutex().lock();
   DltContextMap::iterator dltContextMapEntryIt;
   dltContextMapEntryIt = getMap().find(contextId.c_str());
   if(dltContextMapEntryIt != getMap().end())
   {
     DltContextMapEntry * dltContextMapEntry = (*dltContextMapEntryIt).second;
+    getMutex().unlock();
     return(dltContextMapEntry->getDltContext());
   }
   else
   {
+    getMutex().unlock();
     return registerDltContext(contextId, "dummy context description");
   }
 }
@@ -141,7 +153,9 @@ void IasAudioLogging::addDltContextItem(const std::string contextId, DltLogLevel
   dltContextMapEntry->setDltLogLevel(loglevel);
   dltContextMapEntry->setDltTraceStatus(tracestatus);
   dltContextMapEntry->setDltContext(NULL);
+  getMutex().lock();
   getMap()[contextId] = dltContextMapEntry;
+  getMutex().unlock();
 }
 
 

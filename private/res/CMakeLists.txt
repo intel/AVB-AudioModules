@@ -1,11 +1,9 @@
 #
-# Copyright (C) 2018 Intel Corporation. All rights reserved.
-#
-# SPDX-License-Identifier: BSD-3-Clause
+# @COPYRIGHT_TAG@
 #
 
-set( AUDIO_COMMON_VERSION_MAJOR    2 )
-set( AUDIO_COMMON_VERSION_MINOR    2 )
+set( AUDIO_COMMON_VERSION_MAJOR    3 )
+set( AUDIO_COMMON_VERSION_MINOR    0 )
 set( AUDIO_COMMON_VERSION_REVISION 0 )
 
 include( CMakeLists.common.txt )

@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2018 Intel Corporation. All rights reserved.
- *
- * SPDX-License-Identifier: BSD-3-Clause
+ * @COPYRIGHT_TAG@
  */
 /**
  * @file   IasAudioLogging.hpp
@@ -12,8 +10,9 @@
 #ifndef IASAUDIOLOGGING_HPP_
 #define IASAUDIOLOGGING_HPP_
 
-#include "dlt/dlt.h"
-#include <dlt/dlt_cpp_extension.hpp>
+#include <mutex>
+#include <dlt.h>
+#include <dlt_cpp_extension.hpp>
 //#include "audio/common/IasAudioCommonTypes.hpp"
 
 using namespace std;
@@ -198,10 +197,11 @@ class __attribute__ ((visibility ("default"))) IasAudioLogging
 
     // Member variables
     DltContextMap      mDltContextMap;   //!< A list of all Dlt contexts
+    std::mutex         mMutex;           //!< Mutex to guard access to the context map
 
     //instance
     static DltContextMap & getMap();
-
+    static std::mutex& getMutex();
 };
 
 } //namespace IasAudio

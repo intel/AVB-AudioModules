@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2018 Intel Corporation. All rights reserved.
- *
- * SPDX-License-Identifier: BSD-3-Clause
+ * @COPYRIGHT_TAG@
  */
 
 /**
@@ -26,7 +24,6 @@ struct IasAlsaHwConstraintsStatic;
 class IasAudioIpc;
 class IasMemoryAllocator;
 class IasAudioRingBuffer;
-class IasIntProcMutex;
 
 class __attribute__ ((visibility ("default"))) IasAlsaPluginShmConnection
 {
@@ -135,16 +132,6 @@ class __attribute__ ((visibility ("default"))) IasAlsaPluginShmConnection
       return mRingBuffer;
     }
 
-    /**
-     * @brief Gets a pointer to the open once mutex.
-     *
-     * @return IasIntProcMutex* Pointer to the open once mutex instance.
-     */
-    inline IasIntProcMutex* getOpenOnceMutex()
-    {
-      return mOpenOnceMutex;
-    }
-
   private:
 
     /**
@@ -170,7 +157,6 @@ class __attribute__ ((visibility ("default"))) IasAlsaPluginShmConnection
     IasFdSignal mFdSignal;                    //!< Signal buffer level changes using file descriptors.
     std::string mConnectionName;              //!< The connection name.
     std::string mGroupName;                   //!< The group name.
-    IasIntProcMutex *mOpenOnceMutex;          //!< A mutex to ensure an alsa-plugin is only opened once.
 };
 
 }

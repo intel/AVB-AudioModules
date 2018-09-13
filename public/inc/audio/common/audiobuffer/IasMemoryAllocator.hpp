@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2018 Intel Corporation. All rights reserved.
- *
- * SPDX-License-Identifier: BSD-3-Clause
+ * @COPYRIGHT_TAG@
  */
 /**
  * @file   IasMemoryAllocator.hpp
@@ -60,6 +58,18 @@ class __attribute__ ((visibility ("default"))) IasMemoryAllocator
      * @retval cInitFailed The directory in shared memory couldn't be created
      */
     IasAudioCommonResult init(IasOpenFlag flag);
+
+    /**
+     * @brief Initialize the memory allocator
+     *
+     * @param[in] flag The open flag
+     * @param[out] errorMsg If an error occurred, a detailed message will be returned via this parameter
+     * @return The result of initializing the memory allocator
+     * @retval cOk Ok
+     * @retval cInvalidParam The heap memory does not allow eIasConnect as open flag
+     * @retval cInitFailed The directory in shared memory couldn't be created
+     */
+    IasAudioCommonResult init(IasOpenFlag flag, std::string *errorMsg);
 
     /**
      * @brief Allocate aligned buffer(s)
@@ -210,13 +220,14 @@ class __attribute__ ((visibility ("default"))) IasMemoryAllocator
     void deallocateHeap(void *buffer);
 
     // Member variables
-    bool                                   mInitialized;       //!< If true memory allocator is initialized
+    bool                                        mInitialized;       //!< If true memory allocator is initialized
     std::string                                 mName;              //!< Name of the memory block. Only relevant for shared memory
-    uint32_t                                 mTotalMemorySize;   //!< Total memory size of the whole allocated block
-    bool                                   mShared;            //!< If true memory is allocated in shared memory otherwise in heap memory
+    uint32_t                                    mTotalMemorySize;   //!< Total memory size of the whole allocated block
+    bool                                        mShared;            //!< If true memory is allocated in shared memory otherwise in heap memory
     const std::string                           mFullName;          //!< Fully qualified name in shared memory
     boost::interprocess::managed_shared_memory *mManaged_shm;       //!< Instance is used for shared memory management
     boost::interprocess::managed_heap_memory   *mManaged_heap;      //!< Instance is used for heap memory management
+    IasOpenFlag                                 mOpenFlag;          //!< Remember the open flag for proper clean-up
 };
 
 template <class T>

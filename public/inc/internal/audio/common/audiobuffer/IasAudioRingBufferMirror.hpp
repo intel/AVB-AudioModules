@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2018 Intel Corporation. All rights reserved.
- *
- * SPDX-License-Identifier: BSD-3-Clause
+ * @COPYRIGHT_TAG@
  */
 /**
  * @file
@@ -45,6 +43,7 @@ class __attribute__ ((visibility ("default"))) IasAudioRingBufferMirror
     IasAudioRingBufferResult init(uint32_t numChannels);
 
     IasAudioRingBufferResult setDeviceHandle(void* handle, uint32_t periodSize, uint32_t timeout_ms);
+    void clearDeviceHandle();
 
     void setNonBlockMode(bool isNonBlocking);
 
@@ -94,7 +93,6 @@ class __attribute__ ((visibility ("default"))) IasAudioRingBufferMirror
     uint64_t           mNumTransmittedFrames; //!< Number of transmitted samples since start.
     IasAudioTimestamp  mAudioTimestamp;       //!< Current audio timestamp (pair of timestamp and numTransmittedFrames)
     DltContext        *mLog;                  //!< The DLT log context
-    uint32_t           mTimeOutCnt;           //!< Debug Counter for timeout handling
 };
 
 } // namespace IasAudio

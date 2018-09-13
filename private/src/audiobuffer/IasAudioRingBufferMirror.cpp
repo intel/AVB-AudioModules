@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2018 Intel Corporation. All rights reserved.
- *
- * SPDX-License-Identifier: BSD-3-Clause
+ * @COPYRIGHT_TAG@
  */
 /**
  * @file IasAudioRingBufferMirror.cpp
@@ -34,7 +32,6 @@ IasAudioRingBufferMirror::IasAudioRingBufferMirror()
 ,mNumTransmittedFrames(0)
 ,mAudioTimestamp()
 ,mLog(IasAudioLogging::registerDltContext("RBM", "Audio Ringbuffer Mirror"))
-,mTimeOutCnt(0)
 {
   //Nothing to do here
 }
@@ -72,6 +69,17 @@ IasAudioRingBufferResult IasAudioRingBufferMirror::setDeviceHandle(void* handle,
   {
     DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, "handle == nullptr");
     return eIasRingBuffInvalidParam;
+  }
+}
+
+void IasAudioRingBufferMirror::clearDeviceHandle()
+{
+  if (mDevice != nullptr)
+  {
+    // The device handle mDevice has to be cleared after the printout, as mDevice is used inside
+    // the macro LOG_DEVICE.
+    DLT_LOG_CXX(*mLog, DLT_LOG_INFO, LOG_PREFIX, LOG_DEVICE, "Clear device handle");
+    mDevice = nullptr;
   }
 }
 
@@ -190,18 +198,30 @@ IasAudioRingBufferResult IasAudioRingBufferMirror::updateAvailable(IasRingBuffer
         }
         // Wait until the playback buffer provides space for at least one period.
         int alsaErrorCode = snd_pcm_wait(mDevice, mTimeout_ms);
-        if (alsaErrorCode == 0)
+        int loop = 0;
+        while (alsaErrorCode == 0)
         {
-          // Timeout handling.
-          if(mTimeOutCnt%50 == 0)
+          loop++;
+          if (loop > 50)
           {
-            DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, LOG_DEVICE, "timed out after", mTimeout_ms, "ms, timeOutCnt:",mTimeOutCnt);
-            DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, LOG_DEVICE,"ALSA device state:", snd_pcm_state_name(state));
-            DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, LOG_DEVICE,"Samples/free space available in device:",*samples);
+            DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, LOG_DEVICE, "timed out after", mTimeout_ms, "ms return, retry nr ", loop);
+            DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, LOG_DEVICE, "ALSA device state:", snd_pcm_state_name(state));
+            DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, LOG_DEVICE, "Samples/free space available in device:",*samples);
+            return eIasRingBuffTimeOut;
           }
-          mTimeOutCnt++;
-          return eIasRingBuffTimeOut;
+          if (loop == 1)
+          {
+            DLT_LOG_CXX(*mLog, DLT_LOG_WARN, LOG_PREFIX, LOG_DEVICE, "timed out after", mTimeout_ms, "ms, retry nr ", loop);
+            DLT_LOG_CXX(*mLog, DLT_LOG_WARN, LOG_PREFIX, LOG_DEVICE, "ALSA device state:", snd_pcm_state_name(state));
+            DLT_LOG_CXX(*mLog, DLT_LOG_WARN, LOG_PREFIX, LOG_DEVICE, "Samples/free space available in device:",*samples);
+          }
+          alsaErrorCode = snd_pcm_wait(mDevice, mTimeout_ms);
+          if (alsaErrorCode == 1)
+          {
+            DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, LOG_DEVICE, "successfully recovered by snd_pcm_wait retry nr ", loop);
+          }
         }
+
         if (alsaErrorCode < 0)
         {
           DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, LOG_DEVICE, "is unable to perform wait:", snd_strerror(alsaErrorCode), "trying to recover");
@@ -329,11 +349,13 @@ IasAudioRingBufferResult IasAudioRingBufferMirror::getDataFormat(IasAudioCommonD
 
   if (dataFormat == NULL)
   {
+    DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, LOG_DEVICE, "dataFormat == nullptr");
     return eIasRingBuffInvalidParam;
   }
 
   if (mDevice == NULL)
   {
+    DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, "Device handle of ring buffer is uninitialized");
     return eIasRingBuffNotInitialized;
   }
 
