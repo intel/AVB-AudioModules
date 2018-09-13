@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Intel Corporation. All rights reserved.
+ * Copyright (C) 2018 Intel Corporation.All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -12,6 +12,7 @@
 #include <sys/types.h>
 #include <grp.h>
 #include <iostream>
+#include <exception>
 #include <boost/system/error_code.hpp>
 #include <boost/filesystem.hpp>
 #include "audio/common/audiobuffer/IasMemoryAllocator.hpp"
@@ -35,6 +36,7 @@ IasMemoryAllocator::IasMemoryAllocator(const std::string &name, uint32_t totalMe
   ,mFullName(name)
   ,mManaged_shm(NULL)
   ,mManaged_heap(NULL)
+  ,mOpenFlag(eIasConnect)
 {
   //Nothing to do here
 }
@@ -43,7 +45,7 @@ IasMemoryAllocator::~IasMemoryAllocator()
 {
   if (mInitialized == true)
   {
-    if (mShared == true)
+    if (mShared == true && mOpenFlag == eIasCreate)
     {
       shared_memory_object::remove(mFullName.c_str());
     }
@@ -54,8 +56,14 @@ IasMemoryAllocator::~IasMemoryAllocator()
 
 IasAudioCommonResult IasMemoryAllocator::init(IasOpenFlag flag)
 {
+  return init(flag, nullptr);
+}
+
+IasAudioCommonResult IasMemoryAllocator::init(IasOpenFlag flag, std::string *errorMsg)
+{
   if (mInitialized == false)
   {
+    mOpenFlag = flag;
     uint32_t pageSize = static_cast<uint32_t>(mapped_region::get_page_size());
     // add one page of memory to accommodate the housekeeping overhead
     if (mShared == false)
@@ -68,9 +76,13 @@ IasAudioCommonResult IasMemoryAllocator::init(IasOpenFlag flag)
         {
           mManaged_heap = new managed_heap_memory(totalSize);
         }
-        catch(char* e)
+        catch(std::exception &e)
         {
-          (void) e;
+          if (errorMsg != nullptr)
+          {
+            errorMsg->append("Error allocating managed_heap_memory: ");
+            errorMsg->append(e.what());
+          }
           return eIasResultMemoryError;
         }
       }
@@ -89,24 +101,46 @@ IasAudioCommonResult IasMemoryAllocator::init(IasOpenFlag flag)
         {
           mManaged_shm = new managed_shared_memory(create_only, mFullName.c_str(), totalSize);
         }
-        catch(char* e)
+        catch(std::exception &e)
         {
-          (void) e;
+          if (errorMsg != nullptr)
+          {
+            errorMsg->append("Error allocating managed_shared_memory: ");
+            errorMsg->append(e.what());
+          }
           return eIasResultMemoryError;
         }
       }
       else
       {
         std::string absPath = cShmRoot + mFullName;
-        if (exists(absPath) == true)
+        bool pathExists = false;
+        try
+        {
+          pathExists = exists(absPath);
+        }
+        catch(std::exception &e)
+        {
+          pathExists = false;
+          if (errorMsg != nullptr)
+          {
+            errorMsg->append("Error checking for path existence: ");
+            errorMsg->append(e.what());
+          }
+        }
+        if (pathExists == true)
         {
           try
           {
             mManaged_shm = new managed_shared_memory(open_only, mFullName.c_str());
           }
-          catch(char* e)
+          catch(std::exception &e)
           {
-            (void) e;
+            if (errorMsg != nullptr)
+            {
+              errorMsg->append("Error allocating managed_shared_memory: ");
+              errorMsg->append(e.what());
+            }
             return eIasResultMemoryError;
           }
         }

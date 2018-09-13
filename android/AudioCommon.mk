@@ -1,16 +1,15 @@
-#
 # Copyright (C) 2018 Intel Corporation.All rights reserved.
-#
+
 # SPDX-License-Identifier: BSD-3-Clause
-#
 
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := libias-audio-common
+LOCAL_PROPRIETARY_MODULE := true
 LOCAL_MODULE_OWNER := intel
 LOCAL_MODULE_TAGS := optional
 LOCAL_CLANG := true
-
+LOCAL_HEADER_LIBRARIES += libutils_headers
 LOCAL_SRC_FILES := \
     ../private/src/common/IasAlsaTypeConversion.cpp \
     ../private/src/common/IasAudioCommonTypes.cpp \
@@ -64,12 +63,13 @@ LOCAL_SHARED_LIBRARIES := \
     libias-core_libraries-foundation \
     libias-core_libraries-base \
     libsndfile-1.0.27 \
-    libdlt
+    libdlt \
+    liblog
 
 FD_SIGNAL_PATH := /run/smartx/
 
 LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) \
-    -frtti -fexceptions -msse -msse2 -Wno-unused-parameter \
+    -frtti -fexceptions -msse -msse2 -Werror -Wpointer-arith \
     -DFD_SIGNAL_PATH=\"/mnt/eavb/misc$(FD_SIGNAL_PATH)\"
 
 ifeq ("$(shell [ $(ANDROID_VERSION) -eq $(ANDROID_M) ] && echo true)", "true")
@@ -83,4 +83,3 @@ LOCAL_CFLAGS += \
     -DSHM_ROOT_PATH=\"$(BOOST_SHARED_FOLDER)\"
 
 include $(BUILD_SHARED_LIBRARY)
-

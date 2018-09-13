@@ -1,8 +1,6 @@
-#
 # Copyright (C) 2018 Intel Corporation. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
-#
 
 # Specify a name for the source entity, suggestion is to use <subsystem> <component>_source
 IasInitEntity( audio common_source "" )

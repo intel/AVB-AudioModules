@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Intel Corporation. All rights reserved.
+ * Copyright (C) 2018 Intel Corporation.All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -92,10 +92,10 @@ struct IasAudioArea
   {;}
 
   void*         start;    //!< base address of channel samples
-  uint32_t   first;    //!< offset to first sample in bits
-  uint32_t   step;     //!< samples distance in bits
-  uint32_t   index;    //!< channel index
-  uint32_t   maxIndex; //!< index of the last channel
+  uint32_t      first;    //!< offset to first sample in bits
+  uint32_t      step;     //!< samples distance in bits
+  uint32_t      index;    //!< channel index
+  uint32_t      maxIndex; //!< index of the last channel
 };
 
 /**
@@ -204,7 +204,6 @@ std::string toString(const IasClockType&  type);
 enum IasAudioCommonResult
 {
   eIasResultOk = 0,
-  eIasResultFailed,
   eIasResultInitFailed,
   eIasResultInvalidParam,
   eIasResultNotInitialized,
@@ -226,7 +225,8 @@ enum IasAudioCommonResult
   eIasResultCRCError,
   eIasResultInvalidSegmentSize,
   eIasResultSinkAlreadyConnected,
-  eIasResultConnectionAlreadyExists
+  eIasResultConnectionAlreadyExists,
+  eIasResultFailed
 };
 
 __attribute__ ((visibility ("default"))) IasAudioCommonResult __attribute__((warn_unused_result)) ias_safe_memcpy(void * dest, size_t dest_size, const void * source, size_t source_size);
@@ -369,13 +369,13 @@ struct IasAudioDeviceParams
   {}
 
   std::string name;                       //!< Name of the audio device. This is the ALSA PCM device name
-  uint32_t numChannels;                //!< Number of channels
-  uint32_t samplerate;                 //!< The sample rate in Hz, e.g. 48000
+  uint32_t numChannels;                   //!< Number of channels
+  uint32_t samplerate;                    //!< The sample rate in Hz, e.g. 48000
   IasAudioCommonDataFormat dataFormat;    //!< The data format, see IasAudioCommonDataFormat for details
   IasClockType clockType;                 //!< Whether the audio devices provides the clock to the external application or it receives the clock from the external ALSA PCM device
-  uint32_t periodSize;                 //!< The period size in frames
-  uint32_t numPeriods;                 //!< The number of periods that the ring buffer consists of
-  uint32_t numPeriodsAsrcBuffer;       //!< The number of periods of the ASRC buffer (if the device is serviced by an asynchronous ALSA handler).
+  uint32_t periodSize;                    //!< The period size in frames
+  uint32_t numPeriods;                    //!< The number of periods that the ring buffer consists of
+  uint32_t numPeriodsAsrcBuffer;          //!< The number of periods of the ASRC buffer (if the device is serviced by an asynchronous ALSA handler).
 };
 
 /**
@@ -402,10 +402,10 @@ struct IasAudioPortParams
     ,index(p_index)
   {}
   std::string name;             //!< The name of the audio port
-  uint32_t numChannels;      //!< The number of channels of the audio port
-  int32_t id;                //!< The source or sink id of the audio port which can be used in the IasIRouting::connect and IasIRouting::disconnect calls
+  uint32_t numChannels;         //!< The number of channels of the audio port
+  int32_t id;                   //!< The source or sink id of the audio port which can be used in the IasIRouting::connect and IasIRouting::disconnect calls
   IasPortDirection direction;   //!< The port directon
-  uint32_t index;            //!< The zero based channel index of the first channel of this audio port in the audio device
+  uint32_t index;               //!< The zero based channel index of the first channel of this audio port in the audio device
 };
 
 /**
@@ -444,6 +444,9 @@ struct IasAudioTimestamp
 
 /**
  * @brief Parameters for pipeline configuration
+ *
+ * @note The period size has to be a multiple of 4 when using the gcc compiler and a multiple of 8 when using the Intel compiler. This
+ * is required due to optimizations being applied to the setup of the processing chain.
  */
 struct IasPipelineParams
 {
@@ -468,8 +471,8 @@ struct IasPipelineParams
     {}
 
     std::string name;           //!< The name of the pipeline
-    uint32_t samplerate;     //!< The sample rate in Hz, e.g. 48000
-    uint32_t periodSize;     //!< The period size in frames
+    uint32_t samplerate;        //!< The sample rate in Hz, e.g. 48000
+    uint32_t periodSize;        //!< The period size in frames. It has to be a multiple of 4 when using the gcc compiler and a multiple of 8 when using the Intel compiler.
 };
 
 

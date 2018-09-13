@@ -1,48 +1,49 @@
-#
 # Copyright (C) 2018 Intel Corporation. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
-#
+
+#------------------------------------------------
+# Common Settings
+#------------------------------------------------
 
 #------------------------------------------------
 # ias-audio-common
 #------------------------------------------------
 add_library( ias-audio-common SHARED
+  private/src/common/IasAudioCommonTypes.cpp
+  private/src/common/IasAudioLogging.cpp
+  private/src/common/IasAlsaTypeConversion.cpp
+  private/src/common/IasDataProbe.cpp
+  private/src/common/IasDataProbeHelper.cpp
+  private/src/common/IasIntProcCondVar.cpp
+  private/src/common/IasIntProcMutex.cpp
+  private/src/common/IasFdSignal.cpp
+  private/src/common/IasCommonVersion.cpp
 
-    private/src/common/IasAudioCommonTypes.cpp
-    private/src/common/IasAudioLogging.cpp
-    private/src/common/IasAlsaTypeConversion.cpp
-    private/src/common/IasDataProbe.cpp
-    private/src/common/IasDataProbeHelper.cpp
-    private/src/common/IasIntProcCondVar.cpp
-    private/src/common/IasIntProcMutex.cpp
-    private/src/common/IasFdSignal.cpp
-    private/src/common/IasCommonVersion.cpp
+  private/src/alsa_smartx_plugin/IasAlsaPluginShmConnection.cpp
 
-    private/src/alsa_smartx_plugin/IasAlsaPluginShmConnection.cpp
+  private/src/audiobuffer/IasMemoryAllocator.cpp
+  private/src/audiobuffer/IasMetaDataFactory.cpp
+  private/src/audiobuffer/IasAudioRingBuffer.cpp
+  private/src/audiobuffer/IasAudioRingBufferTypes.cpp
+  private/src/audiobuffer/IasAudioRingBufferResult.cpp
+  private/src/audiobuffer/IasAudioRingBufferReal.cpp
+  private/src/audiobuffer/IasAudioRingBufferMirror.cpp
+  private/src/audiobuffer/IasAudioRingBufferFactory.cpp
 
-    private/src/audiobuffer/IasMemoryAllocator.cpp
-    private/src/audiobuffer/IasMetaDataFactory.cpp
-    private/src/audiobuffer/IasAudioRingBuffer.cpp
-    private/src/audiobuffer/IasAudioRingBufferTypes.cpp
-    private/src/audiobuffer/IasAudioRingBufferResult.cpp
-    private/src/audiobuffer/IasAudioRingBufferReal.cpp
-    private/src/audiobuffer/IasAudioRingBufferMirror.cpp
-    private/src/audiobuffer/IasAudioRingBufferFactory.cpp
+  private/src/samplerateconverter/IasSrcController.cpp
+  private/src/samplerateconverter/IasSrcFarrow.cpp
+  private/src/samplerateconverter/IasSrcFarrowFirFilter.cpp
+  private/src/samplerateconverter/IasSrcWrapper.cpp
 
-    private/src/samplerateconverter/IasSrcController.cpp
-    private/src/samplerateconverter/IasSrcFarrow.cpp
-    private/src/samplerateconverter/IasSrcFarrowFirFilter.cpp
-    private/src/samplerateconverter/IasSrcWrapper.cpp
+  private/src/helper/IasCopyAudioAreaBuffers.cpp
+  private/src/helper/IasIRunnable.cpp
+  private/src/helper/IasThread.cpp
+)
 
-    private/src/helper/IasCopyAudioAreaBuffers.cpp
-    private/src/helper/IasIRunnable.cpp
-    private/src/helper/IasThread.cpp
-  )
+set_target_properties( ias-audio-common PROPERTIES VERSION ${AUDIO_COMMON_VERSION_STRING} SOVERSION ${AUDIO_COMMON_VERSION_MAJOR} )
 
-set( AUDIO_COMMON_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/public/inc CACHE INTERNAL "Audio Common Include Directories" FORCE)
-
-set_target_properties( ias-audio-common PROPERTIES VERSION ${AUDIO_COMMON_VERSION_STRING} SOVERSION ${AUDIO_COMMON_VERSION_STRING} )
+find_package(PkgConfig)
 
 target_compile_options( ias-audio-common PUBLIC -ffast-math )
 target_compile_options( ias-audio-common PUBLIC --std=c++11 )
@@ -50,13 +51,23 @@ target_compile_options( ias-audio-common PUBLIC -msse )
 target_compile_options( ias-audio-common PUBLIC -msse2 )
 target_compile_options( ias-audio-common PUBLIC -O3 )
 
+# for version header
+target_include_directories( ias-audio-common PRIVATE ${CMAKE_CURRENT_BINARY_DIR} )
+
+target_include_directories( ias-audio-common PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/private/inc )
+
+target_include_directories( ias-audio-common PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public/inc>
+  $<INSTALL_INTERFACE:public/inc> )
+
+
 include_directories( ${DLT_INCLUDE_DIRS} )
 
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/private/inc )
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/public/inc )
+pkg_check_modules(ASOUND REQUIRED alsa)
+pkg_check_modules(SNDFILE REQUIRED sndfile)
+pkg_check_modules(DLT REQUIRED automotive-dlt)
+pkg_check_modules(DLT REQUIRED automotive-dlt-c++)
 
-# for version header
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 target_link_libraries( ias-audio-common tbb )
 target_link_libraries( ias-audio-common boost_system )
@@ -74,6 +85,17 @@ target_include_directories( ias-audio-common PUBLIC ${ASOUND_INCLUDE_DIRS})
 target_include_directories( ias-audio-common PUBLIC ${SNDFILE_INCLUDE_DIRS})
 target_include_directories( ias-audio-common PUBLIC ${DLT_INCLUDE_DIRS})
 
+
+
+install( TARGETS ias-audio-common EXPORT ias-audio-common
+         LIBRARY
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            COMPONENT Libraries
+)
+install( DIRECTORY public/inc/ DESTINATION include
+         PATTERN "smartx_test_support" EXCLUDE )
+install( EXPORT ias-audio-common DESTINATION ${CMAKE_INSTALL_LIBDIR}/ias-audio-common )
+
 #------------------------------------------------
 # alsa-smartx-plugin (libasound_module_pcm_smartx)
 #------------------------------------------------
@@ -86,15 +108,19 @@ target_compile_options( asound_module_pcm_smartx PUBLIC --std=c++11 )
 target_compile_options( asound_module_pcm_smartx PUBLIC -fPIC )
 target_compile_options( asound_module_pcm_smartx PUBLIC -DPIC )
 
-target_link_libraries( asound_module_pcm_smartx ${ASOUND_LDFLAGS} )
-target_compile_options( asound_module_pcm_smartx PUBLIC ${ASOUND_CFLAGS_OTHER} )
-target_include_directories( asound_module_pcm_smartx PUBLIC ${ASOUND_INCLUDE_DIRS} )
+target_include_directories( asound_module_pcm_smartx PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/private/inc )
 
+target_link_libraries( asound_module_pcm_smartx asound )
 target_link_libraries( asound_module_pcm_smartx ${DLT_LDFLAGS} )
-target_compile_options( asound_module_pcm_smartx PUBLIC ${DLT_CFLAGS_OTHER})
-target_include_directories( asound_module_pcm_smartx PUBLIC ${DLT_INCLUDE_DIRS})
-
 target_link_libraries( asound_module_pcm_smartx ias-audio-common )
+
+install( TARGETS asound_module_pcm_smartx EXPORT asound_module_pcm_smartx
+         LIBRARY
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}/alsa-lib
+            COMPONENT Libraries
+)
+install( FILES public/res/50-smartx.conf DESTINATION share/alsa/alsa.conf.d )
+install( EXPORT asound_module_pcm_smartx DESTINATION ${CMAKE_INSTALL_LIBDIR}/ias-audio-common )
 
 #------------------------------------------------
 # alsa-smartx--rate-plugin (libasound_module_rate_smartx)
@@ -108,3 +134,13 @@ add_library( asound_module_rate_smartx MODULE
 )
 
 target_compile_options( asound_module_rate_smartx PUBLIC --std=c++11 )
+
+target_link_libraries( asound_module_rate_smartx ias-audio-common )
+
+install( TARGETS asound_module_rate_smartx EXPORT asound_module_rate_smartx
+         LIBRARY
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}/alsa-lib
+            COMPONENT Libraries
+)
+install( EXPORT asound_module_rate_smartx DESTINATION ${CMAKE_INSTALL_LIBDIR}/ias-audio-common )
+

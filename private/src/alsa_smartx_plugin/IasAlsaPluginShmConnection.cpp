@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Intel Corporation. All rights reserved.
+ * Copyright (C) 2018 Intel Corporation.All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -50,22 +50,21 @@ IasAlsaPluginShmConnection::IasAlsaPluginShmConnection()
   ,mFdSignal()
   ,mConnectionName()
   ,mGroupName()
-  ,mOpenOnceMutex(nullptr)
 {
 }
 
 IasAlsaPluginShmConnection::~IasAlsaPluginShmConnection()
 {
-  if(mAllocator && mIsCreator)
-  {
-    delete mAllocator;
-
-    IasAudioRingBufferFactory::getInstance()->destroyRingBuffer(mRingBuffer);
-  }
+  delete mAllocator;
   if(mIsCreator)
   {
+    IasAudioRingBufferFactory::getInstance()->destroyRingBuffer(mRingBuffer);
     mFdSignal.close();
     mFdSignal.destroy();
+  }
+  else
+  {
+    IasAudioRingBufferFactory::getInstance()->loseRingBuffer(mRingBuffer);
   }
 }
 
@@ -99,8 +98,7 @@ IasAudioCommonResult IasAlsaPluginShmConnection::createConnection(const std::str
   uint32_t totalSize = static_cast<uint32_t>(2 * sizeof(IasAudioIpc) +
                                                    sizeof(IasAlsaHwConstraintsStatic) +
                                                    2 * sizeof(int32_t) +
-                                                   sizeof(bool) +
-                                                   sizeof(IasIntProcMutex));
+                                                   sizeof(bool));
 
   // Get an allocator
   mAllocator = new IasMemoryAllocator(connectionName+"_connection", totalSize ,true);
@@ -157,14 +155,6 @@ IasAudioCommonResult IasAlsaPluginShmConnection::createConnection(const std::str
   // Save the pointer in class
   mInIpc = tempIpc + 1;
   mOutIpc = tempIpc;
-
-  // Allocate space for the open once mutex
-  if( eIasResultOk !=
-    (result = mAllocator->allocate<IasIntProcMutex>(connectionName + "_openonce", 1, &mOpenOnceMutex)))
-  {
-    DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, "Fail to create open once mutex: error=", toString(result));
-    return result;
-  }
 
   return result;
 }
@@ -263,21 +253,21 @@ IasAudioCommonResult IasAlsaPluginShmConnection::findConnection(const std::strin
   uint32_t totalSize = static_cast<uint32_t>(2 * sizeof(IasAudioIpc) +
                                                    sizeof(IasAlsaHwConstraintsStatic) +
                                                    2 * sizeof(int32_t) +
-                                                   sizeof(bool) +
-                                                   sizeof(IasIntProcMutex));
+                                                   sizeof(bool));
 
   // Get an allocator
   mAllocator = new IasMemoryAllocator(connectionName+"_connection", totalSize ,true);
   IAS_ASSERT(mAllocator != nullptr);
 
   // Try to find an instance of the allocator
+  std::string errorMsg;
   if( eIasResultOk !=
-    (result = mAllocator->init(IasMemoryAllocator::eIasConnect)))
+    (result = mAllocator->init(IasMemoryAllocator::eIasConnect, &errorMsg)))
   {
     /**
      * @log <NAME> cannot be found in shared memory.
      */
-    DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, LOG_DEVICE, "Fail to init the allocator: error=", toString(result));
+    DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, LOG_DEVICE, "Fail to init the allocator: error=", toString(result), ":", errorMsg);
     return result;
   }
 
@@ -319,14 +309,6 @@ IasAudioCommonResult IasAlsaPluginShmConnection::findConnection(const std::strin
   // Save the IPC queues.
   mInIpc = tempIpc;
   mOutIpc = tempIpc + 1;
-
-  // Try to find the open once mutex
-  if( eIasResultOk !=
-    (result = mAllocator->find<IasIntProcMutex>(connectionName + "_openonce", &dumpCount, &mOpenOnceMutex)))
-  {
-    DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, LOG_DEVICE, "Fail to find the open once mutex: error=", toString(result));
-    return result;
-  }
 
   return result;
 }

@@ -1,14 +1,12 @@
-#
 # Copyright (C) 2018 Intel Corporation. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
-#
 CMAKE_MINIMUM_REQUIRED( VERSION 3.4.3 )
 project (AudioCommon)
 
 # set release version for audio-common
-set( AUDIO_COMMON_VERSION_MAJOR    2 )
-set( AUDIO_COMMON_VERSION_MINOR    2 )
+set( AUDIO_COMMON_VERSION_MAJOR    3 )
+set( AUDIO_COMMON_VERSION_MINOR    0 )
 set( AUDIO_COMMON_VERSION_REVISION 0 )
 
 set( AUDIO_COMMON_VERSION_STRING ${AUDIO_COMMON_VERSION_MAJOR}.${AUDIO_COMMON_VERSION_MINOR}.${AUDIO_COMMON_VERSION_REVISION})
@@ -25,6 +23,12 @@ unset(CURRENT_VERSION_MAJOR)
 unset(CURRENT_VERSION_MINOR)
 unset(CURRENT_VERSION_REVISION)
 unset(VERSION_H_INCLUDE_GUARD)
+
+if( NOT CMAKE_INSTALL_LIBDIR )
+  # This can be overwritten externally by defining it to lib64 if required
+  set( CMAKE_INSTALL_LIBDIR lib )
+  message( "CMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}" )
+endif()
 
 include( CMakeLists.common.txt )
 

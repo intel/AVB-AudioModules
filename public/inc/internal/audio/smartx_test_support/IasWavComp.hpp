@@ -1,8 +1,7 @@
 /*
- * Copyright (C) 2018 Intel Corporation. All rights reserved.
+ * Copyright (C) 2018 Intel Corporation.All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
- */
 /**
  * @file    IasWavComp.hpp
  * @brief   Compare two audio (WAVE) files, by calculating the difference.

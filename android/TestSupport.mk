@@ -1,6 +1,5 @@
 #
 # Copyright (C) 2018 Intel Corporation.All rights reserved.
-#
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
@@ -39,7 +38,8 @@ LOCAL_STATIC_LIBRARIES:= \
     libboost \
     libboost_serialization
 
-LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) -msse -msse2 -frtti -fexceptions -Wno-unused-parameter
+LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) -msse -msse2 -frtti -fexceptions -Werror \
+    -Wpointer-arith
 
 include $(BUILD_SHARED_LIBRARY)
 
@@ -80,10 +80,8 @@ BOOST_SHARED_FOLDER := /mnt/eavb/misc/audioserver/
 endif
 
 LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) \
-    -Wall -Wextra -Werror -Wno-unused-parameter \
-    -Wno-unused-const-variable -Wno-unused-function \
+    -Wall -Wextra -Werror -Wpointer-arith \
     -frtti -fexceptions \
-    -Wno-missing-braces \
     -DBOOST_INTERPROCESS_SHARED_DIR_PATH=\"$(BOOST_SHARED_FOLDER)\"
 
 LOCAL_MODULE := ias_shm_client_process

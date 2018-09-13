@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Intel Corporation. All rights reserved.
+ * Copyright (C) 2018 Intel Corporation.All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -21,49 +21,8 @@ IasDataProbe::IasResult processQueueEntry(IasProbingQueueEntry &entry,
                                           IasDataProbePtr* probe,
                                           uint32_t probingBufferSize)
 {
-  IasDataProbe::IasResult probeRes = IasDataProbe::eIasOk;
-  if (entry.action == eIasProbingStart)
-  {
-    if (*probe == nullptr)
-    {
-      *probe = std::make_shared<IasDataProbe>();
-      IAS_ASSERT(*probe != nullptr);
-      if (entry.params.isInject)
-      {
-
-        probeRes = (*probe)->startInject(entry.params.name,
-                                         entry.params.numChannels,
-                                         entry.params.sampleRate,
-                                         entry.params.dataFormat,
-                                         entry.params.startIndex,
-                                         probingBufferSize,
-                                         entry.params.duration);
-      }
-      else
-      {
-        probeRes = (*probe)->startRecording(entry.params.name,
-                                            entry.params.numChannels,
-                                            entry.params.sampleRate,
-                                            entry.params.dataFormat,
-                                            entry.params.startIndex,
-                                            probingBufferSize,
-                                            entry.params.duration);
-      }
-    }
-    else
-    {
-      return IasDataProbe::eIasAlreadyStarted;
-    }
-  }
-  else
-  {
-    if(*probe != nullptr)
-    {
-      (*probe)->stop();
-      *probe = nullptr;
-    }
-  }
-  return probeRes;
+  std::atomic<bool> probingActive(false);
+  return processQueueEntry(entry, probe, &probingActive, probingBufferSize);
 }
 
 IasDataProbe::IasResult processQueueEntry(IasProbingQueueEntry &entry,
@@ -71,6 +30,7 @@ IasDataProbe::IasResult processQueueEntry(IasProbingQueueEntry &entry,
                                           std::atomic<bool> *probingActive,
                                           uint32_t probingBufferSize)
 {
+  IAS_ASSERT(probingActive != nullptr);
   IasDataProbe::IasResult probeRes;
 
   if (entry.action == eIasProbingStart)
