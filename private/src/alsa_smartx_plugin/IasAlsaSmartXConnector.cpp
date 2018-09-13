@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Intel Corporation. All rights reserved.
+ * Copyright (C) 2018 Intel Corporation.All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -13,7 +13,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <limits>
-
+#include <unistd.h>
 #include "internal/audio/common/alsa_smartx_plugin/IasAlsaPluginIpc.hpp"
 #include "internal/audio/common/alsa_smartx_plugin/IasAlsaHwConstraintsStatic.hpp"
 #include "internal/audio/common/audiobuffer/IasAudioRingBuffer.hpp"
@@ -49,6 +49,7 @@ IasAlsaSmartXConnector::IasAlsaSmartXConnector()
   ,mAvailMin(0)
   ,mRest(0)
   ,mFdSignal()
+  ,mOpenOnceFd(-1)
 {
   //Nothing to do here
 }
@@ -70,6 +71,7 @@ IasAlsaSmartXConnector::~IasAlsaSmartXConnector()
   {
     delete mSmartxConnection;
   }
+  closeOpenOnceFile();
 }
 
 int IasAlsaSmartXConnector::init(const char* name, const snd_pcm_stream_t& stream, const int& mode)
@@ -739,6 +741,40 @@ snd_pcm_sframes_t IasAlsaSmartXConnector::getRealAvail()
   return static_cast<snd_pcm_sframes_t>(available);
 }
 
+  void IasAlsaSmartXConnector::closeOpenOnceFile()
+  {
+    if (mOpenOnceFd != -1)
+    {
+      int res = ftruncate(mOpenOnceFd, 0);
+      if (res == 0)
+      {
+        res = lockf(mOpenOnceFd, F_ULOCK, 0);
+      }
+      else
+      {
+        DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, "device=" + mFullName + ":", "Cannot truncate open once file lock:", strerror(errno));
+        res = -errno;
+      }
+      if (res == 0)
+      {
+        DLT_LOG_CXX(*mLog, DLT_LOG_INFO, LOG_PREFIX, "device=" + mFullName + ":", "Successfully unlocked open once file lock");
+      }
+      else
+      {
+        DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, "device=" + mFullName + ":", "Cannot unlock open once file lock:", strerror(errno));
+      }
+      res = close(mOpenOnceFd);
+      if (res == 0)
+      {
+        DLT_LOG_CXX(*mLog, DLT_LOG_INFO, LOG_PREFIX, "device=" + mFullName + ":", "Successfully closed open once file lock");
+        mOpenOnceFd = -1;
+      }
+      else
+      {
+        DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, "device=" + mFullName + ":", "Cannot close open once file lock:", strerror(errno));
+      }
+    }
+  }
 
 /*
  * ALSA: Callback Functions
@@ -781,24 +817,18 @@ int IasAlsaSmartXConnector::snd_pcm_smartx_drain(snd_pcm_ioplug_t *io)
 
 int IasAlsaSmartXConnector::snd_pcm_smartx_close(snd_pcm_ioplug_t *io)
 {
+  int res = 0;
   // Ensured by alsa framework
   IAS_ASSERT(io != nullptr);
   // Ensured by plugin init
   IAS_ASSERT(io->private_data != nullptr);
-  IasAlsaSmartXConnector *connector = static_cast<IasAlsaSmartXConnector*>(io->private_data);
-  // Ensured by plugin init
-  IAS_ASSERT(connector->mSmartxConnection != nullptr);
-  IasIntProcMutex *openOnce = connector->mSmartxConnection->getOpenOnceMutex();
-  // Ensured by plugin init
-  IAS_ASSERT(openOnce != nullptr);
-  openOnce->unlock();
   // As we know the private_data to be IasAlsaSmartXConnector, it must have been initialised
   // in IasAlsaSmartXConnector::Init, which set io->private_data to `this`. Also io is a member
   // of IasAlsaSmartXConnector and thus is not valid anymore after deleting IasAlsaSmartXConnector
   // instance. Trying to set
   // io->private_data after this delete will cause use-after-free.
   delete static_cast<IasAlsaSmartXConnector*>(io->private_data);
-  return 0;
+  return res;
 }
 
 snd_pcm_sframes_t IasAlsaSmartXConnector::snd_pcm_smartx_pointer(snd_pcm_ioplug_t *io)
@@ -919,6 +949,11 @@ void IasAlsaSmartXConnector::initCallbacks(const snd_pcm_stream_t& stream)
   mAlsaCallbacks.get_real_avail = snd_pcm_smartx_real_avail;
 }
 
+#ifndef OPEN_ONCE_LOCK_PATH
+#define OPEN_ONCE_LOCK_PATH "/run/smartx/"
+#endif
+
+
 int IasAlsaSmartXConnector::connectToSmartX()
 {
   IasAudioCommonResult result(eIasResultOk);
@@ -936,13 +971,62 @@ int IasAlsaSmartXConnector::connectToSmartX()
     DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, LOG_DEVICE, "Alsa plugin can't be connected to smartx. IasAudioCommonResult:", toString(result));
     return -ENODEV;
   }
-  IasIntProcMutex *openOnce = mSmartxConnection->getOpenOnceMutex();
-  // This is ensured by the findConnection method of the IasAlsaPluginShmConnection class.
-  IAS_ASSERT(openOnce != nullptr);
-  if (openOnce->trylock() == IasIntProcMutex::eIasMutexLockFailed)
+  std::string openOnceFilename = OPEN_ONCE_LOCK_PATH + mFullName + ".lock";
+  mOpenOnceFd = open(openOnceFilename.c_str(), O_CREAT | O_RDWR | O_SYNC, 0660);
+  if (mOpenOnceFd < 0)
   {
-    DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, LOG_DEVICE, "Alsa plugin for this device already opened.");
-    return -EBUSY;
+    DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, LOG_DEVICE, "Error creating or opening open once lock:", strerror(errno));
+    return mOpenOnceFd;
+  }
+  int res = lockf(mOpenOnceFd, F_TLOCK, 0);
+  if (res == 0)
+  {
+    pid_t myPid = getpid();
+    pid_t pidInFile = 0;
+    ssize_t bytes;
+    bytes = read(mOpenOnceFd, &pidInFile, sizeof(pid_t));
+    if (bytes < 0)
+    {
+      DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, LOG_DEVICE, "Error while trying to read content of open once lock file:", strerror(errno));
+      return -EINVAL;
+    }
+    if (myPid == pidInFile)
+    {
+      DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, LOG_DEVICE, "Alsa plugin for this device already opened by same process with pid=", myPid);
+      return -EBUSY;
+    }
+    else
+    {
+      off_t offset = lseek(mOpenOnceFd, 0, SEEK_SET);
+      if (offset < 0)
+      {
+        DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, LOG_DEVICE, "Error adjusting offset for open once lock file:", strerror(errno));
+        return -EBUSY;
+      }
+      bytes = write(mOpenOnceFd, &myPid, sizeof(pid_t));
+      if (bytes >= 0)
+      {
+        DLT_LOG_CXX(*mLog, DLT_LOG_INFO, LOG_PREFIX, LOG_DEVICE, "Successfully locked", openOnceFilename, "fd=", mOpenOnceFd, "pid=", myPid, "pidInFile=", pidInFile);
+      }
+      else
+      {
+        DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, LOG_DEVICE, "Error while trying to write content of open once lock file:", strerror(errno));
+        return -EINVAL;
+      }
+    }
+  }
+  else
+  {
+    if (errno == EACCES || errno == EAGAIN)
+    {
+      DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, LOG_DEVICE, "Alsa plugin for this device already opened:", strerror(errno));
+      return -EBUSY;
+    }
+    else
+    {
+      DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, LOG_DEVICE, "Error trying to lock the open once file:", strerror(errno));
+      return -EINVAL;
+    }
   }
   return 0;
 }

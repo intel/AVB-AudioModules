@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Intel Corporation. All rights reserved.
+ * Copyright (C) 2018 Intel Corporation.All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -108,10 +108,24 @@ IasAudioRingBuffer* IasAudioRingBufferFactory::findRingBuffer(std::string name)
       DLT_LOG_CXX(*mLog, DLT_LOG_ERROR, LOG_PREFIX, LOG_BUFFER, "setup of ringbuffer failed");
       return nullptr;
     }
+    ringBuf->setName(name);
 
     std::pair<IasAudioRingBuffer*,IasMemoryAllocator*> tmpPair(ringBuf,mem);
     mMemoryMap.insert(tmpPair);
     return ringBuf;
+  }
+}
+
+void IasAudioRingBufferFactory::loseRingBuffer(IasAudioRingBuffer* ringBuf)
+{
+  IasMemoryAllocatorMap::iterator it = mMemoryMap.find(ringBuf);
+  if(it != mMemoryMap.end())
+  {
+    std::string name = ringBuf->getName();
+    delete (*it).first;
+    delete (*it).second;
+    mMemoryMap.erase(it);
+    DLT_LOG_CXX(*mLog, DLT_LOG_INFO, LOG_PREFIX, LOG_BUFFER, "Successfully deleted");
   }
 }
 

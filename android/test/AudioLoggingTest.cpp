@@ -1,8 +1,9 @@
 /*
- * Copyright (C) 2018 Intel Corporation.All rights reserved.
- *
- * SPDX-License-Identifier: BSD-3-Clause
- */
+* Copyright (C) 2018 Intel Corporation.All rights reserved.
+*
+* SPDX-License-Identifier: BSD-3-Clause
+*
+*/
 
 #include <internal/audio/common/IasAudioLogging.hpp>
 #include <utils/String8.h>

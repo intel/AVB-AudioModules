@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Intel Corporation. All rights reserved.
+ * Copyright (C) 2018 Intel Corporation.All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -435,6 +435,9 @@ int IasSrcFarrowFirFilter::reset()
     return 1;
   }
   mRingBufferIndex = 0;
+#if IASSRCFARROWCONFIG_USE_SSE
+  mPaddingForSSE = (mRingBufferIndex+1) & 0x00000003;
+#endif
 
   for (chan=0; chan<mMaxNumInputChannels; chan++)
   {

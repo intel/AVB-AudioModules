@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Intel Corporation. All rights reserved.
+ * Copyright (C) 2018 Intel Corporation.All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -32,10 +32,33 @@
 ADD_IPC_ID(IasAudioIpcPluginControl, 1);
 
 /*
+ * Contains one floating point with one control type information.
+ */
+using IasAudioIpcPluginFloatData = IasAudio::IasAudioIpcPluginControlData<float>;
+ADD_IPC_ID(IasAudioIpcPluginFloatData, 2);
+
+
+/*
+ * Dummy function to avoid compiler warning "unused function"
+ */
+inline void dummyCallControl(){(void)GET_IPC_ID(IasAudioIpcPluginControl);};
+
+
+/*
+ * Dummy function to avoid compiler warning "unused function"
+ */
+inline void dummyCallFloat(){(void)GET_IPC_ID(IasAudioIpcPluginFloatData);};
+
+/*
  * Contains one 32bit integer with one control type information.
  */
 using IasAudioIpcPluginInt32Data = IasAudio::IasAudioIpcPluginControlData<int32_t>;
 ADD_IPC_ID(IasAudioIpcPluginInt32Data, 3);
+
+/*
+ * Dummy function to avoid compiler warning "unused function"
+ */
+inline void dummyCallInt32(){(void)GET_IPC_ID(IasAudioIpcPluginInt32Data);};
 
 /*
  * Contains the parameter data with one control type information.
@@ -44,10 +67,20 @@ using IasAudioIpcPluginParamData = IasAudio::IasAudioIpcPluginControlData<IasAud
 ADD_IPC_ID(IasAudioIpcPluginParamData, 4);
 
 /*
+ * Dummy function to avoid compiler warning "unused function"
+ */
+inline void dummyCallParam(){(void)GET_IPC_ID(IasAudioIpcPluginParamData);};
+
+/*
  * Contains the response of a control, which is also represented by a control.
  */
 using IasAudioIpcPluginControlResponse = IasAudio::IasAudioIpcPluginControlData<IasAudio::IasAudioIpcPluginControl>;
 ADD_IPC_ID(IasAudioIpcPluginControlResponse, 5);
+
+/*
+ * Dummy function to avoid compiler warning "unused function"
+ */
+inline void dummyCallResponse(){(void)GET_IPC_ID(IasAudioIpcPluginControlResponse);};
 
 // END IPC ID Definition Section
 // #############################################################

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Intel Corporation. All rights reserved.
+ * Copyright (C) 2018 Intel Corporation.All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -162,6 +162,14 @@ IasAudioRingBufferResult IasAudioRingBuffer::setDeviceHandle(void* handle, uint3
   else
   {
     return eIasRingBuffNotAllowed;
+  }
+}
+
+void IasAudioRingBuffer::clearDeviceHandle()
+{
+  if (!mReal)
+  {
+    mRingBufMirror->clearDeviceHandle();
   }
 }
 

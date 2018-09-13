@@ -1,8 +1,8 @@
 /*
- * Copyright (C) 2018 Intel Corporation. All rights reserved.
- *
- * SPDX-License-Identifier: BSD-3-Clause
- */
+  * Copyright (C) 2018 Intel Corporation.All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  */
 //
 // Conversion from 12000 Hz to 48000 Hz
 // N=7, M=64, alpha=7.800000, gamma=0.459000

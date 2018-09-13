@@ -1,7 +1,28 @@
 #
-# Copyright (C) 2018 Intel Corporation.All rights reserved.
+# INTEL CONFIDENTIAL
+# Copyright (c) 2015-2017 Intel Corporation
+# All Rights Reserved.
 #
-# SPDX-License-Identifier: BSD-3-Clause
+# The source code contained or described herein and all documents related to
+# the source code ("Material") are owned by Intel Corporation or its
+# suppliers or licensors. Title to the Material remains with Intel
+# Corporation or its suppliers and licensors. The Material may contain trade
+# secrets and proprietary and confidential information of Intel Corporation
+# and its suppliers and licensors, and is protected by worldwide copyright
+# and trade secret laws and treaty provisions. No part of the Material may be
+# used, copied, reproduced, modified, published, uploaded, posted,
+# transmitted, distributed, or disclosed in any way without Intel's prior
+# express written permission.
+#
+# No license under any patent, copyright, trade secret or other intellectual
+# property right is granted to or conferred upon you by disclosure or
+# delivery of the Materials, either expressly, by implication, inducement,
+# estoppel or otherwise. Any license under such intellectual property rights
+# must be express and approved by Intel in writing.
+#
+# Unless otherwise agreed by Intel in writing, you may not remove or alter
+# this notice or any other notice embedded in Materials by Intel or Intel's
+# suppliers or licensors in any way.
 #
 
 #######################################################################
@@ -24,7 +45,7 @@ LOCAL_SHARED_LIBRARIES := \
     libdlt
 
 LOCAL_CLANG := true
-LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) -Wall -Wextra -Werror -Wno-unused-parameter
+LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) -Wall -Wextra -Werror -Wpointer-arith
 
 LOCAL_MODULE := audio_logging_test
 
@@ -64,8 +85,8 @@ LOCAL_CLANG := true
 NULL_ALSA_DEVICE_NAME := plughw_31_0
 
 LOCAL_CFLAGS := \
-    -Wall -Wextra -Werror -Wno-unused-parameter \
-    -Wno-unused-const-variable -Wno-unused-function -frtti -fexceptions \
+    -Wall -Wextra -Werror -Wpointer-arith \
+    -frtti -fexceptions \
     -DALSA_DEVICE_NAME=\"$(NULL_ALSA_DEVICE_NAME)\"
 
 LOCAL_REQUIRED_MODULES := asound.conf
@@ -107,8 +128,8 @@ LOCAL_SHARED_LIBRARIES := \
 NULL_ALSA_DEVICE_NAME := plughw_31_0
 
 LOCAL_CLANG := true
-LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) -Wall -Wextra -Werror -Wno-unused-parameter \
-    -Wno-unused-const-variable -Wno-unused-function -frtti -fexceptions \
+LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) -Wall -Wextra -Werror -Wpointer-arith \
+    -frtti -fexceptions \
     -DALSA_DEVICE_NAME=\"$(NULL_ALSA_DEVICE_NAME)\"
 
 LOCAL_REQUIRED_MODULES := asound.conf
@@ -153,10 +174,8 @@ BOOST_SHARED_FOLDER := /system/usr/
 
 LOCAL_CLANG := true
 LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) \
-    -Wall -Wextra -Werror -Wno-unused-parameter \
-    -Wno-unused-const-variable -Wno-unused-function \
+    -Wall -Wextra -Werror -Wpointer-arith \
     -frtti -fexceptions \
-    -Wno-missing-braces \
     -DBOOST_INTERPROCESS_SHARED_DIR_PATH=\"$(BOOST_SHARED_FOLDER)\" \
     -DCLIENT_PROCESS_PATH=\"$(CLIENT_PROCESS_PATH)\"
 
@@ -198,8 +217,7 @@ LOCAL_SHARED_LIBRARIES := \
     libasound
 
 LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) \
-    -Wall -Wextra -Werror -Wno-unused-parameter \
-    -Wno-unused-const-variable -Wno-unused-function \
+    -Wall -Wextra -Werror -Wpointer-arith \
     -frtti -fexceptions
 
 LOCAL_MODULE := alsa_type_conversion_test
@@ -240,8 +258,7 @@ LOCAL_SHARED_LIBRARIES := \
     libasound
 
 LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) \
-    -Wall -Wextra -Werror -Wno-unused-parameter \
-    -Wno-unused-const-variable -Wno-unused-function \
+    -Wall -Wextra -Werror -Wpointer-arith \
     -frtti -fexceptions
 
 LOCAL_MODULE := audio_common_types_test
@@ -284,8 +301,7 @@ INJECT_FILE_FOLDER := /sdcard/
 EXTRACT_FILE_FOLDER := /sdcard/
 
 LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) \
-    -Wall -Wextra -Werror -Wno-unused-parameter \
-    -Wno-unused-const-variable -Wno-unused-function \
+    -Wall -Wextra -Werror -Wpointer-arith \
     -frtti -fexceptions \
     -DINJECT_FILE_FOLDER=\"$(INJECT_FILE_FOLDER)\" \
     -DEXTRACT_FILE_FOLDER=\"$(EXTRACT_FILE_FOLDER)\"
@@ -327,8 +343,7 @@ LOCAL_SHARED_LIBRARIES := \
     libasound
 
 LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) \
-    -Wall -Wextra -Werror -Wno-unused-parameter \
-    -Wno-unused-const-variable -Wno-unused-function \
+    -Wall -Wextra -Werror -Wpointer-arith \
     -frtti -fexceptions
 
 LOCAL_MODULE := copy_audio_area_buffers_test
@@ -359,8 +374,7 @@ LOCAL_SHARED_LIBRARIES := \
     libdlt
 
 LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) \
-    -Wall -Wextra -Werror -Wno-unused-parameter \
-    -Wno-unused-const-variable -Wno-unused-function \
+    -Wall -Wextra -Werror -Wpointer-arith \
     -frtti -fexceptions
 
 LOCAL_MODULE := mutex_condvar_test
@@ -391,8 +405,7 @@ LOCAL_SHARED_LIBRARIES := \
     libdlt
 
 LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) \
-    -Wall -Wextra -Werror -Wno-unused-parameter \
-    -Wno-unused-const-variable -Wno-unused-function \
+    -Wall -Wextra -Werror -Wpointer-arith \
     -frtti -fexceptions
 
 LOCAL_MODULE := mutex_condvar_error_test
@@ -425,8 +438,7 @@ LOCAL_SHARED_LIBRARIES := \
     libdlt
 
 LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) \
-    -Wall -Wextra -Werror -Wno-unused-parameter \
-    -Wno-unused-const-variable -Wno-unused-function \
+    -Wall -Wextra -Werror -Wpointer-arith \
     -frtti -fexceptions
 
 LOCAL_MODULE := src_wrapper_test
@@ -468,10 +480,8 @@ CLIENT_PROCESS_PATH := /system/bin/
 BOOST_SHARED_FOLDER := /system/usr/
 
 LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) \
-    -Wall -Wextra -Werror -Wno-unused-parameter \
-    -Wno-unused-const-variable -Wno-unused-function \
+    -Wall -Wextra -Werror -Wpointer-arith \
     -frtti -fexceptions \
-    -Wno-missing-braces \
     -DBOOST_INTERPROCESS_SHARED_DIR_PATH=\"$(BOOST_SHARED_FOLDER)\" \
     -DCLIENT_PROCESS_PATH=\"$(CLIENT_PROCESS_PATH)\"
 
@@ -537,8 +547,7 @@ LOCAL_SHARED_LIBRARIES := \
 RESOURCES_PATH := /system/etc/
 
 LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) \
-    -Wall -Wextra -Werror -Wno-unused-parameter \
-    -Wno-unused-const-variable -Wno-unused-function \
+    -Wall -Wextra -Werror -Wpointer-arith \
     -frtti -fexceptions \
     -DRESOURCES_PATH=\"$(RESOURCES_PATH)\"
 
@@ -603,8 +612,7 @@ LOCAL_SHARED_LIBRARIES := \
 RESOURCES_PATH := /system/etc/
 
 LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) \
-    -Wall -Wextra -Werror -Wno-unused-parameter \
-    -Wno-unused-const-variable -Wno-unused-function \
+    -Wall -Wextra -Werror -Wpointer-arith \
     -frtti -fexceptions \
     -DRESOURCES_PATH=\"$(RESOURCES_PATH)\"
 
@@ -672,8 +680,7 @@ LOCAL_SHARED_LIBRARIES := \
 NFS_PATH := /system/etc/
 
 LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) \
-    -Wall -Wextra -Werror -Wno-unused-parameter \
-    -Wno-unused-const-variable -Wno-unused-function \
+    -Wall -Wextra -Werror -Wpointer-arith \
     -frtti -fexceptions \
     -DNFS_PATH=\"$(NFS_PATH)\"
 

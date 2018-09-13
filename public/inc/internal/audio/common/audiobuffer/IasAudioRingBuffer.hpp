@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Intel Corporation. All rights reserved.
+ * Copyright (C) 2018 Intel Corporation.All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -113,6 +113,11 @@ class __attribute__ ((visibility ("default"))) IasAudioRingBuffer
      *                        the IasAudioRingBuffer::updateAvailable method.
      */
     IasAudioRingBufferResult setDeviceHandle(void* handle, uint32_t periodSize, uint32_t timeout_ms);
+
+    /*!
+     * @brief Clear the device handle registered previously via setDeviceHandle.
+     */
+    void clearDeviceHandle();
 
     /*!
      * @brief Let the ring buffer operate in non-blocking mode.

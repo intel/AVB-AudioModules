@@ -1,8 +1,6 @@
-#
 # Copyright (C) 2018 Intel Corporation.All rights reserved.
-#
+
 # SPDX-License-Identifier: BSD-3-Clause
-#
 
 #---------------------------------------------------------------------------------------------------
 # Android Version Constants definition:
@@ -21,8 +19,9 @@ ANDROID_VERSION_6 := $(ANDROID_M)
 ANDROID_VERSION_7 := $(ANDROID_N)
 ANDROID_VERSION_8 := $(ANDROID_O)
 ANDROID_VERSION_O := $(ANDROID_O)
+ANDROID_VERSION_OMR1 := $(ANDROID_O)
 
-ANDROID_SUPPORTED_VERSIONS := 6 7 O 8
+ANDROID_SUPPORTED_VERSIONS := 6 7 O 8 OMR1
 
 #------------------------------------------------------------------
 # Determining Android version of current build
@@ -30,14 +29,14 @@ ANDROID_SUPPORTED_VERSIONS := 6 7 O 8
 #------------------------------------------------------------------
 PLATFORM_VERSION_FIRST_LETTER := $(word 1, $(subst ., ,$(PLATFORM_VERSION)))
 
-$(warning "PLATFORM_VERSION $(PLATFORM_VERSION)")
-$(warning "PLATFORM_VERSION_FIRST_LETTER $(PLATFORM_VERSION_FIRST_LETTER)")
+$(info "PLATFORM_VERSION $(PLATFORM_VERSION)")
+$(info "PLATFORM_VERSION_FIRST_LETTER $(PLATFORM_VERSION_FIRST_LETTER)")
 
 $(foreach item, $(ANDROID_SUPPORTED_VERSIONS),\
     $(if $(call streq,$(PLATFORM_VERSION_FIRST_LETTER),$(item)),\
         $(eval ANDROID_VERSION := $(ANDROID_VERSION_$(item))),))
 
-$(if $(ANDROID_VERSION),$(warning "ANDROID_VERSION $(ANDROID_VERSION)"),\
+$(if $(ANDROID_VERSION),$(info "ANDROID_VERSION $(ANDROID_VERSION)"),\
     $(error Unsupported Android version))
 
 #######################################################################

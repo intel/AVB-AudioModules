@@ -1,5 +1,17 @@
 # Changes
 
+@subpage v3_0_0
+
+@subpage v2_2_5
+
+@subpage v2_2_4
+
+@subpage v2_2_3
+
+@subpage v2_2_2
+
+@subpage v2_2_1
+
 @subpage v2_2_0
 
 @subpage v2_1_6
@@ -60,6 +72,35 @@
 
 @subpage v1_6_0
 
+@page v3_0_0 3.0.0
+
+* add new method to clear the ALSA device handle registered in the audio ring buffer mirror, to avoid
+a segfault in the SmartXbar when trying to connect a port of a stopped audio source device.
+* fix compiler warnings when compiling with gcc >= 7.3.0.
+
+@page v2_2_5 2.2.5
+
+* fix segfault in IasAudioLogging implementation.
+
+@page v2_2_4 2.2.4
+
+* fix segfault in ASRC implementation.
+
+@page v2_2_3 2.2.3
+
+* handle filesystem exceptions correctly when trying to connect to a shared memory.
+* document constraint of the pipeline configuration regarding the period size.
+* properly clean-up open-once file in alsa-smartx-plugin in case of an error during opening of the ALSA device.
+
+@page v2_2_2 2.2.2
+
+* fix device or resource busy error reported from a subsequent snd\_pcm\_open of the same ALSA device, when snd\_pcm\_open and snd\_pcm\_close are called from different threads.
+
+@page v2_2_1 2.2.1
+
+* fix a memory leak in the ring buffer and its memory allocator.
+* add more log messages for the open once mutex being used to disallow opening an ALSA device more than once.
+
 @page v2_2_0 2.2.0
 
 * general updates to support probing of pins.
@@ -74,7 +115,7 @@
 
 @page v2_1_4 2.1.4
 
-* create an error when trying to open the same ALSA device more than once. 
+* create an error when trying to open the same ALSA device more than once.
 
 @page v2_1_3 2.1.3
 

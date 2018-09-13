@@ -1,8 +1,7 @@
 #
 # Copyright (C) 2018 Intel Corporation.All rights reserved.
-#
 # SPDX-License-Identifier: BSD-3-Clause
-#
+
 
 include $(CLEAR_VARS)
 
@@ -28,7 +27,7 @@ LOCAL_SHARED_LIBRARIES := \
     libcutils \
     libasound
 
-LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) -Wall -Wextra -Werror -Wno-unused-parameter
+LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) -Wall -Wextra -Werror -Wpointer-arith
 
 LOCAL_CLANG := true
 

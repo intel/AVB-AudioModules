@@ -1,16 +1,16 @@
 #
 # Copyright (C) 2018 Intel Corporation.All rights reserved.
-#
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := libasound_module_pcm_smartx
+LOCAL_PROPRIETARY_MODULE := true
 LOCAL_MODULE_OWNER := intel
 LOCAL_MODULE_TAGS := optional
 LOCAL_CLANG := true
-
+LOCAL_HEADER_LIBRARIES += libutils_headers
 LOCAL_REQUIRED_MODULES := \
     50-smartx.conf \
     asound.rc
@@ -35,11 +35,15 @@ LOCAL_SHARED_LIBRARIES := \
     libias-audio-common \
     libias-core_libraries-foundation \
     libias-core_libraries-base \
-    libdlt
+    libdlt \
+    liblog
+
+OPEN_ONCE_LOCK_PATH := /run/smartx/
 
 LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) \
-    -frtti -fexceptions -Wno-unused-parameter \
-    -fPIC -DPIC
+    -frtti -fexceptions -Wall -Wno-unused-parameter -Wpointer-arith \
+    -fPIC -DPIC \
+    -DOPEN_ONCE_LOCK_PATH=\"/mnt/eavb/misc$(OPEN_ONCE_LOCK_PATH)\"
 
 ifeq ("$(shell [ $(ANDROID_VERSION) -eq $(ANDROID_M) ] && echo true)", "true")
 BOOST_SHARED_FOLDER := /mnt/eavb/misc/media/
@@ -57,9 +61,10 @@ include $(BUILD_SHARED_LIBRARY)
 #######################################################################
 include $(CLEAR_VARS)
 LOCAL_MODULE := 50-smartx.conf
+LOCAL_PROPRIETARY_MODULE := true
 LOCAL_MODULE_OWNER := intel
 LOCAL_MODULE_TAGS := optional
-LOCAL_MODULE_PATH := $(TARGET_OUT)/usr/share/alsa/alsa.conf.d
+LOCAL_MODULE_PATH := $(TARGET_OUT_VENDOR)/usr/share/alsa/alsa.conf.d
 LOCAL_MODULE_CLASS := ETC
 LOCAL_SRC_FILES := ../public/res/$(LOCAL_MODULE)
 include $(BUILD_PREBUILT)
@@ -69,6 +74,7 @@ include $(BUILD_PREBUILT)
 #######################################################################
 include $(CLEAR_VARS)
 LOCAL_MODULE := asound.rc
+LOCAL_PROPRIETARY_MODULE := true
 LOCAL_MODULE_OWNER := intel
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := ETC
@@ -108,7 +114,8 @@ include $(BUILD_PREBUILT)
 #    libdlt \
 #    libasound
 
-#LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) -Wall -Wextra -Werror -Wno-unused-parameter -Wno-unused-function -frtti -fexceptions
+#LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) -Wall -Wextra -Werror -Werror \
+#    -Wpointer-arith -frtti -fexceptions
 
 #LOCAL_CLANG := true
 #LOCAL_MODULE := alsa_smartx_plugin_tst
@@ -143,7 +150,9 @@ include $(BUILD_PREBUILT)
 #    libdlt \
 #    libasound
 
-#LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) -Wall -Wextra -Werror -Wno-unused-parameter -Wno-unused-function -frtti -fexceptions
+#LOCAL_CFLAGS := $(IAS_COMMON_CFLAGS) -Wall -Wextra -Werror -frtti \
+#    -Wpointer-arith -fexceptions
+
 #LOCAL_CLANG := true
 #LOCAL_MODULE := alsa_smartx_connection_tst
 
