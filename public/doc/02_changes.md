@@ -1,5 +1,7 @@
 # Changes
 
+@subpage v3_0_1
+
 @subpage v3_0_0
 
 @subpage v2_2_5
@@ -71,6 +73,11 @@
 @subpage v1_6_1
 
 @subpage v1_6_0
+
+@page v3_0_1 3.0.1
+
+* fix possible segfault in new method clearDeviceHandle. An invalid access was done using an
+already closed ALSA device handle to get the name of the ALSA device.
 
 @page v3_0_0 3.0.0
 
