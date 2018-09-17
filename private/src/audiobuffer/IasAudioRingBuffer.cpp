@@ -199,6 +199,15 @@ void IasAudioRingBuffer::setAvailMin(uint32_t availMin)
 }
 
 
+void IasAudioRingBuffer::setBoundary(uint64_t boundary)
+{
+  if (mReal == true)
+  {
+    mRingBufReal->setBoundary(boundary);
+  }
+}
+
+
 void IasAudioRingBuffer::setFdSignal(IasFdSignal *fdSignal, IasDeviceType deviceType)
 {
   if (mReal == true)
@@ -382,6 +391,30 @@ uint32_t IasAudioRingBuffer::getWriteOffset() const
   if (mReal)
   {
     return mRingBufReal->getWriteOffset();
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+int64_t IasAudioRingBuffer::getHwPtrRead() const
+{
+  if (mReal)
+  {
+    return mRingBufReal->getHwPtrRead();
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+int64_t IasAudioRingBuffer::getHwPtrWrite() const
+{
+  if (mReal)
+  {
+    return mRingBufReal->getHwPtrWrite();
   }
   else
   {

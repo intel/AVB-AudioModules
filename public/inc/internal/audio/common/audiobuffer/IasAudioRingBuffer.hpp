@@ -348,6 +348,24 @@ class __attribute__ ((visibility ("default"))) IasAudioRingBuffer
     uint32_t getWriteOffset() const;
 
     /*!
+     * @brief Get the continuously increasing hw ptr for read access.
+     *
+     * This is required for the ALSA io-plug to correctly calculate its own hw ptr.
+     * Supported only for real buffers.
+     * @returns The hw ptr for read access.
+     */
+    int64_t getHwPtrRead() const;
+
+    /*!
+     * @brief Get the continuously increasing hw ptr for write access.
+     *
+     * This is required for the ALSA io-plug to correctly calculate its own hw ptr.
+     * Supported only for real buffers.
+     * @returns The hw ptr for read access.
+     */
+    int64_t getHwPtrWrite() const;
+
+    /*!
      * @brief Reset the readOffset and the writeOffset to zero, so that the ring buffer will be empty again.
      *
      * The function is intended to be called by the writer thread, while there is no write access in progress.
@@ -387,6 +405,15 @@ class __attribute__ ((visibility ("default"))) IasAudioRingBuffer
      * @param[in] availMin  The minimum number of frames that must be available before the fdSignal might be triggered.
      */
     void setAvailMin(uint32_t availMin);
+
+    /*!
+     * @brief Set the boundary value
+     *
+     * The boundary value is used as a wrap around point to avoid overflow of the snd_pcm_sframes_t range.
+     *
+     * @param[in] boundary The boundary value as defined in the ALSA pcm device
+     */
+    void setBoundary(uint64_t boundary);
 
     /*!
      * @brief Set the file descriptor signal instance
@@ -439,8 +466,8 @@ class __attribute__ ((visibility ("default"))) IasAudioRingBuffer
     IasAudioRingBufferReal    *mRingBufReal;       //!< pointer to IasAudioRingBufferReal
     IasAudioRingBufferMirror  *mRingBufMirror;     //!< pointer to IasAudioRingBufferMirror
     IasAudioArea              *mAreas;             //!< pointer to the IasAudioAreas
-    bool                  mReal;              //!< flag to indicate if it is a mirror or real buffer
-    uint32_t                mNumChannels;       //!< the number of channels
+    bool                       mReal;              //!< flag to indicate if it is a mirror or real buffer
+    uint32_t                   mNumChannels;       //!< the number of channels
     std::string                mName;              //!< the name of the ring buffer
 };
 

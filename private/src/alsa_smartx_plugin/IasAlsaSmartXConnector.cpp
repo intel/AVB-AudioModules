@@ -109,6 +109,7 @@ int IasAlsaSmartXConnector::init(const char* name, const snd_pcm_stream_t& strea
   mAlsaIoPlugData->callback = &mAlsaCallbacks;
   mAlsaIoPlugData->private_data = this;
   mAlsaIoPlugData->poll_fd = -1;
+  mAlsaIoPlugData->flags |= SND_PCM_IOPLUG_FLAG_BOUNDARY_WA;
 
   // Init the callback structure
   initCallbacks(stream);
@@ -363,8 +364,12 @@ int IasAlsaSmartXConnector::setSwParams(snd_pcm_sw_params_t *params)
   IasAudioRingBuffer* ringBuffer = mSmartxConnection->verifyAndGetRingBuffer();
   IAS_ASSERT(ringBuffer != nullptr);
   ringBuffer->setAvailMin(static_cast<uint32_t>(mAvailMin));
+  DLT_LOG_CXX(*mLog, DLT_LOG_INFO, LOG_PREFIX, LOG_DEVICE, "Set mAvailMin to", static_cast<uint32_t>(mAvailMin));
 
-  DLT_LOG_CXX(*mLog, DLT_LOG_INFO, LOG_PREFIX, LOG_DEVICE, "Set mAvailMin to ", static_cast<uint32_t>(mAvailMin));
+  snd_pcm_uframes_t boundary;
+  snd_pcm_sw_params_get_boundary(params, &boundary);
+  ringBuffer->setBoundary(boundary);
+  DLT_LOG_CXX(*mLog, DLT_LOG_INFO, LOG_PREFIX, LOG_DEVICE, "Set boundary to", static_cast<int64_t>(boundary));
 
   return 0;
 }
@@ -556,14 +561,14 @@ snd_pcm_sframes_t IasAlsaSmartXConnector::getFramePointer()
   IAS_ASSERT(mSmartxConnection != nullptr);
   IasAudioRingBuffer* ringBuffer = mSmartxConnection->verifyAndGetRingBuffer();
   IAS_ASSERT(ringBuffer != nullptr);
-  uint32_t available = 0;
+  int64_t available = 0;
   if (mAlsaIoPlugData->stream == SND_PCM_STREAM_CAPTURE)
   {
-    available = ringBuffer->getWriteOffset();
+    available = ringBuffer->getHwPtrWrite();
   }
   else
   {
-    available = ringBuffer->getReadOffset();
+    available = ringBuffer->getHwPtrRead();
   }
   returnValue = static_cast<snd_pcm_sframes_t>(available);
 
@@ -725,23 +730,7 @@ snd_pcm_sframes_t IasAlsaSmartXConnector::transferJob(const snd_pcm_channel_area
   }
 }
 
-snd_pcm_sframes_t IasAlsaSmartXConnector::getRealAvail()
-{
-  IasAudioRingBuffer* ringBuffer = mSmartxConnection->verifyAndGetRingBuffer();
-  IAS_ASSERT(ringBuffer != nullptr);
-  uint32_t available = 0;
-  if (mAlsaIoPlugData->stream == SND_PCM_STREAM_CAPTURE)
-  {
-    ringBuffer->updateAvailable(eIasRingBufferAccessRead, &available);
-  }
-  else
-  {
-    ringBuffer->updateAvailable(eIasRingBufferAccessWrite, &available);
-  }
-  return static_cast<snd_pcm_sframes_t>(available);
-}
-
-  void IasAlsaSmartXConnector::closeOpenOnceFile()
+void IasAlsaSmartXConnector::closeOpenOnceFile()
   {
     if (mOpenOnceFd != -1)
     {
@@ -913,15 +902,6 @@ int IasAlsaSmartXConnector::snd_pcm_smartx_delay(snd_pcm_ioplug_t *io, snd_pcm_s
   return -EBADFD;
 }
 
-snd_pcm_sframes_t IasAlsaSmartXConnector::snd_pcm_smartx_real_avail(snd_pcm_ioplug_t *io)
-{
-  // Ensured by alsa framework
-  IAS_ASSERT(io != nullptr);
-  // Ensured by plugin init
-  IAS_ASSERT(io->private_data != nullptr);
-  return static_cast<IasAlsaSmartXConnector*>(io->private_data)->getRealAvail();
-}
-
 
 /*
  * PRIVATE
@@ -946,7 +926,6 @@ void IasAlsaSmartXConnector::initCallbacks(const snd_pcm_stream_t& stream)
   mAlsaCallbacks.prepare = snd_pcm_smartx_prepare;
   mAlsaCallbacks.delay = snd_pcm_smartx_delay;
   mAlsaCallbacks.poll_revents = snd_pcm_smartx_poll_revents;
-  mAlsaCallbacks.get_real_avail = snd_pcm_smartx_real_avail;
 }
 
 #ifndef OPEN_ONCE_LOCK_PATH

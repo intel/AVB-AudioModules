@@ -88,6 +88,9 @@ class __attribute__ ((visibility ("default"))) IasAudioRingBufferReal
     uint32_t getReadOffset() { return mReadOffset; };
     uint32_t getWriteOffset() { return mWriteOffset; };
 
+    int64_t getHwPtrRead() { return mHwPtrRead; };
+    int64_t getHwPtrWrite() { return mHwPtrWrite; };
+
     void resetFromWriter();
     void resetFromReader();
 
@@ -119,6 +122,15 @@ class __attribute__ ((visibility ("default"))) IasAudioRingBufferReal
      * @param[in] availMin  The minimum number of frames that must be available before the fdSignal might be triggered.
      */
     void setAvailMin(uint32_t availMin);
+
+    /*!
+     * @brief Set the boundary value
+     *
+     * The boundary value is used as a wrap around point to avoid overflow of the snd_pcm_sframes_t range.
+     *
+     * @param[in] boundary The boundary value as defined in the ALSA pcm device
+     */
+    void setBoundary(uint64_t boundary);
 
     /*!
      * @brief Set the file descriptor signal instance
@@ -153,27 +165,30 @@ class __attribute__ ((visibility ("default"))) IasAudioRingBufferReal
     uint32_t                                           mNumChannelsMax;   //!< the maximum supported number of channels
     uint32_t                                           mReadOffset;       //!< readOffset, similar to Alsa (frames)
     uint32_t                                           mWriteOffset;      //!< writeOffset, similar to Alsa (frames)
-    IasAudioCommonDataFormat                              mDataFormat;       //!< the data format of the PCM samples
+    IasAudioCommonDataFormat                           mDataFormat;       //!< the data format of the PCM samples
     int32_t                                            mSampleSize;       //!< number of bytes per sample
     uint32_t                                           mBufferLevel;      //!< fill level in samples
-    bool                                             mShared;           //!< flag to indicate if the buffer is in shared memory
-    bool                                             mInitialized;      //!< this flag is true when init function was successful
-    std::atomic<bool>                                     mReadInProgress;
-    std::atomic<bool>                                     mWriteInProgress;
-    boost::interprocess::offset_ptr<void>                 mDataBuf;          //!< the offset pointer to the data memory
-    IasIntProcMutex                                       mMutex;
-    IasIntProcMutex                                       mMutexReadInProgress;  //!< to avoid that reset is executed while reading from buffer
-    IasIntProcMutex                                       mMutexWriteInProgress; //!< to avoid that reset is executed while writing into buffer
-    IasIntProcCondVar                                     mCondRead;
-    IasIntProcCondVar                                     mCondWrite;
+    bool                                               mShared;           //!< flag to indicate if the buffer is in shared memory
+    bool                                               mInitialized;      //!< this flag is true when init function was successful
+    std::atomic<bool>                                  mReadInProgress;
+    std::atomic<bool>                                  mWriteInProgress;
+    boost::interprocess::offset_ptr<void>              mDataBuf;          //!< the offset pointer to the data memory
+    IasIntProcMutex                                    mMutex;
+    IasIntProcMutex                                    mMutexReadInProgress;  //!< to avoid that reset is executed while reading from buffer
+    IasIntProcMutex                                    mMutexWriteInProgress; //!< to avoid that reset is executed while writing into buffer
+    IasIntProcCondVar                                  mCondRead;
+    IasIntProcCondVar                                  mCondWrite;
     uint32_t                                           mReadWaitLevel;
     uint32_t                                           mWriteWaitLevel;
-    IasAudioTimestamp                                     mAudioTimestampAccessRead;  //!< AudioTimestamp of the last read access to the buffer
-    IasAudioTimestamp                                     mAudioTimestampAccessWrite; //!< AudioTimestamp of the last write access to the buffer
-    IasAudioRingBufferStreamingState                      mStreamingState;            //!< straming state: running, stopWrite, stopRead
-    IasFdSignal                                          *mFdSignal;          //!< Signal based on filedescriptors between SmartXbar and user application
-    IasDeviceType                                         mDeviceType;        //!< The device type to decide, when to trigger a signal
+    IasAudioTimestamp                                  mAudioTimestampAccessRead;  //!< AudioTimestamp of the last read access to the buffer
+    IasAudioTimestamp                                  mAudioTimestampAccessWrite; //!< AudioTimestamp of the last write access to the buffer
+    IasAudioRingBufferStreamingState                   mStreamingState;            //!< straming state: running, stopWrite, stopRead
+    IasFdSignal                                       *mFdSignal;          //!< Signal based on filedescriptors between SmartXbar and user application
+    IasDeviceType                                      mDeviceType;        //!< The device type to decide, when to trigger a signal
     uint32_t                                           mAvailMin;
+    int64_t                                            mHwPtrRead;         //!< Continuously increasing hw ptr for ALSA IO-plug for read.
+    int64_t                                            mHwPtrWrite;        //!< Continuously increasing hw ptr for ALSA IO-plug for write.
+    uint64_t                                           mBoundary;          //!< The boundary as warp around point for the read and write hw_ptr.
 };
 
 inline bool operator==( IasAudioRingBufferReal const & left, IasAudioRingBufferReal const & right)

@@ -179,16 +179,6 @@ class IasAlsaSmartXConnector
     snd_pcm_sframes_t transferJob(const snd_pcm_channel_area_t* areas, snd_pcm_uframes_t offset,
                                   snd_pcm_uframes_t size , const TransferDirection& direction);
 
-    /**
-     * @brief Get the real number of available frames of the buffer
-     *
-     * For playback devices, this returns the number of free frames available in the buffer to fill by writing audio data.
-     * For capture devices, this returns the number of audio frames available in the buffer to read.
-     *
-     * @return The real number of available frames of the buffer
-     */
-    snd_pcm_sframes_t getRealAvail();
-
 
     /*
      *  ALSA Static Callback Section
@@ -308,14 +298,6 @@ class IasAlsaSmartXConnector
      * @return int UNIX Error Code, Zero is good.
      */
     static int snd_pcm_smartx_delay(snd_pcm_ioplug_t *io, snd_pcm_sframes_t* frames);
-
-    /**
-     * @brief Callback function that calls the public getRealAvail function.
-     *
-     * @param[in] io Pointer to the io plug data and the contained private data.
-     * @return The real available number of frames of the buffer.
-     */
-    static snd_pcm_sframes_t snd_pcm_smartx_real_avail(snd_pcm_ioplug_t *io);
 
   private:
     /**

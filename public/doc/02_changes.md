@@ -1,5 +1,7 @@
 # Changes
 
+@subpage v4_0_0
+
 @subpage v3_0_1
 
 @subpage v3_0_0
@@ -73,6 +75,14 @@
 @subpage v1_6_1
 
 @subpage v1_6_0
+
+@page v4_0_0 4.0.0
+
+* [alsa-smartx-plugin] Use always increasing hw pointer internally that wraps around at ALSA boundary value instead of buffer level.
+This allows to get rid of the patch to the alsa-lib, which introduced a new function pointer for the io-plug mechanism. The patch
+in the alsa-lib was used in the past to get rid of the issue that the io-plug could not distinguish between a full and an empty
+buffer. The alsa-lib version 1.1.6 is required with this version of the alsa-smartx-plugin to work correctly as v1.1.6 contains
+some very important patches applied to the io-plug implementation in the alsa-lib.
 
 @page v3_0_1 3.0.1
 

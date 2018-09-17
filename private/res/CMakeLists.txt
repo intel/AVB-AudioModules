@@ -2,9 +2,9 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-set( AUDIO_COMMON_VERSION_MAJOR    3 )
+set( AUDIO_COMMON_VERSION_MAJOR    4 )
 set( AUDIO_COMMON_VERSION_MINOR    0 )
-set( AUDIO_COMMON_VERSION_REVISION 1 )
+set( AUDIO_COMMON_VERSION_REVISION 0 )
 
 include( CMakeLists.common.txt )
 
