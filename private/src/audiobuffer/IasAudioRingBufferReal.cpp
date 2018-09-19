@@ -13,6 +13,7 @@
 #include "internal/audio/common/IasAudioLogging.hpp"
 #include "internal/audio/common/IasFdSignal.hpp"
 
+#include <limits.h>
 #include <chrono>
 #include <stdio.h>
 #include <stdlib.h>
@@ -55,6 +56,9 @@ IasAudioRingBufferReal::IasAudioRingBufferReal()
   ,mFdSignal(nullptr)
   ,mDeviceType(eIasDeviceTypeUndef)
   ,mAvailMin(0u)
+  ,mHwPtrRead(0)
+  ,mHwPtrWrite(0)
+  ,mBoundary(0)
 {
   //Nothing to do here
 }
@@ -93,6 +97,12 @@ IasAudioRingBufferResult IasAudioRingBufferReal::init(uint32_t periodSize,
   mNumChannels = nChannels;
   mDataFormat = dataFormat;
   mDataBuf = dataBuf;
+  // Set it to an initial value similar like the default value used in the alsa-lib.
+  mBoundary = mPeriodSize*mNumPeriods;
+  while (mBoundary * 2 <= static_cast<uint64_t>(LONG_MAX) - mPeriodSize*mNumPeriods)
+  {
+    mBoundary *= 2;
+  }
   mInitialized = true;
 
   return eIasRingBuffOk;
@@ -218,6 +228,11 @@ IasAudioRingBufferResult IasAudioRingBufferReal::endAccess(IasRingBufferAccess a
         mReadOffset += frames;
       }
       mBufferLevel -= frames;
+      mHwPtrRead += frames;
+      if (static_cast<uint64_t>(mHwPtrRead) >= mBoundary)
+      {
+        mHwPtrRead -= mBoundary;
+      }
 
       // Get the current time stamp and write it to mAudioTimestampAccessRead
       auto durationSinceEpoch = std::chrono::high_resolution_clock::now().time_since_epoch();
@@ -264,6 +279,11 @@ IasAudioRingBufferResult IasAudioRingBufferReal::endAccess(IasRingBufferAccess a
         mWriteOffset += frames;
       }
       mBufferLevel += frames;
+      mHwPtrWrite += frames;
+      if (static_cast<uint64_t>(mHwPtrWrite) >= mBoundary)
+      {
+        mHwPtrWrite -= mBoundary;
+      }
 
       // Get the current time stamp and write it to mAudioTimestampAccessWrite
       auto durationSinceEpoch = std::chrono::high_resolution_clock::now().time_since_epoch();
@@ -409,6 +429,15 @@ void IasAudioRingBufferReal::resetFromReader()
 void IasAudioRingBufferReal::setAvailMin(uint32_t availMin)
 {
   mAvailMin = availMin;
+}
+
+void IasAudioRingBufferReal::setBoundary(uint64_t boundary)
+{
+  mBoundary = boundary;
+  // Additionally clear the ever increasing hw_ptr here to align them to the state of the hw_ptr
+  // maintained in the ALSA pcm device structure.
+  mHwPtrRead = 0;
+  mHwPtrWrite = 0;
 }
 
 void IasAudioRingBufferReal::setFdSignal(IasFdSignal *fdSignal, IasDeviceType deviceType)

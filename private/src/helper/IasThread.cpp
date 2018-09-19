@@ -211,7 +211,7 @@ IasThreadResult IasThread::getThreadName(const IasThreadId threadId, std::string
 
 IasThreadResult IasThread::setSchedulingParameters(const IasThreadId threadId, IasThreadSchedulingPolicy policy, int32_t priority)
 {
-  int32_t schedulingPolicy;
+  int32_t schedulingPolicy = SCHED_OTHER;
   IasThreadResult result = processSchedulingParameters(policy, priority, schedulingPolicy);
   if (result == eIasThreadOk)
   {

@@ -78,9 +78,7 @@ void IasAudioRingBufferMirror::clearDeviceHandle()
 {
   if (mDevice != nullptr)
   {
-    // The device handle mDevice has to be cleared after the printout, as mDevice is used inside
-    // the macro LOG_DEVICE.
-    DLT_LOG_CXX(*mLog, DLT_LOG_INFO, LOG_PREFIX, LOG_DEVICE, "Clear device handle");
+    DLT_LOG_CXX(*mLog, DLT_LOG_INFO, LOG_PREFIX, "Clear device handle");
     mDevice = nullptr;
   }
 }
