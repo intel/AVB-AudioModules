@@ -10,4 +10,4 @@
 #define AUDIO_COMMON_VERSION_REVISION           5 /**< subminor number of library version */
 
 /** library version (string) */
-#define VERSION_STRING	"2.2.5"
+#define VERSION_STRING	"4.0.0"
