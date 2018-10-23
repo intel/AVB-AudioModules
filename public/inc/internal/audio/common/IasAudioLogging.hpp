@@ -13,8 +13,8 @@
 #define IASAUDIOLOGGING_HPP_
 
 #include <mutex>
-#include <dlt.h>
-#include <dlt_cpp_extension.hpp>
+#include <dlt/dlt.h>
+#include <dlt/dlt_cpp_extension.hpp>
 //#include "audio/common/IasAudioCommonTypes.hpp"
 
 using namespace std;
