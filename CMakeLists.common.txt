@@ -92,7 +92,7 @@ install( TARGETS ias-audio-common EXPORT ias-audio-common
             DESTINATION ${CMAKE_INSTALL_LIBDIR}
             COMPONENT Libraries
 )
-install( DIRECTORY public/inc/ DESTINATION include
+install( DIRECTORY public/inc/ DESTINATION include/avbaudiomodules
          PATTERN "smartx_test_support" EXCLUDE )
 install( EXPORT ias-audio-common DESTINATION ${CMAKE_INSTALL_LIBDIR}/ias-audio-common )
 
