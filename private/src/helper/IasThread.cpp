@@ -628,7 +628,7 @@ void IasThread::run()
     (void) __sync_and_and_fetch(&mThreadState, ~cTHREAD_STATE_RUNNING_FLAG);
     if ( runWasCalled )
     {
-      IasThreadResult afterRunResult;
+      IasThreadResult afterRunResult = eIasThreadOk;
       if (mRunnableObject->afterRun())
       {
         afterRunResult = eIasThreadFailed;
