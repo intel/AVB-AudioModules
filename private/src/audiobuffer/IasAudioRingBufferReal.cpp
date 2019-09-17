@@ -437,7 +437,18 @@ void IasAudioRingBufferReal::setBoundary(uint64_t boundary)
   // Additionally clear the ever increasing hw_ptr here to align them to the state of the hw_ptr
   // maintained in the ALSA pcm device structure.
   mHwPtrRead = 0;
-  mHwPtrWrite = 0;
+
+  //Set this to mAvailMin since that will cause capture applications to start reading
+  //immedietely and not prevent SmartX from filling the buffer. Otherwise, there is a deadlock
+  //as SmartX waits for the application to read data before it writes more data and
+  //the application waits for SmartX to write more data before it reads more data.
+  //TODO: Capture devices need to know how much data is in the buffer and query mHwPtrWrite
+  //when calling the ioplug pointer() callback. Instead, they should query some application pointer
+  //and subtract if from the hardware pointer to make this determination, instead of holding
+  //that value in one data member. Then, we can set the application pointer to 0 here
+  //instead of holding the current availability in one "hardware" pointer (which in this case
+  //really be something like (mHwPtrWrite - mApplPtrWrite)).
+  mHwPtrWrite = mAvailMin;
 }
 
 void IasAudioRingBufferReal::setFdSignal(IasFdSignal *fdSignal, IasDeviceType deviceType)
